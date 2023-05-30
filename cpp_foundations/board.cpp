@@ -3,8 +3,9 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <algorithm>
 
-enum class State {kEmpty, kObstacle, kClosed};
+enum class State {kEmpty, kObstacle, kClosed, kPath};
 
 /**
 * @brief Takes a string of grid values (0's or 1's read from a file where 0 represents open and 1
@@ -66,6 +67,14 @@ bool Compare(std::vector<int> node1, std::vector<int> node2){
 }
 
 /**
+ * @brief Sort the two-dimensional vector of ints in descending order.
+ * @param[in] v: pointer to the list of cells (nodes) to sort (format is x, y, g, h)
+ */
+void CellSort(std::vector<std::vector<int>> *v) {
+  std::sort(v->begin(), v->end(), Compare);
+}
+
+/**
 * @brief Calculates the Manhatten distance between two points (x1,y1) and (x2,y2) (0,0 is top left)
 *
 * @param[in] x1: The x coordinate of point 1
@@ -111,6 +120,24 @@ std::vector<std::vector<State>> Search(std::vector<std::vector<State>> grid,
   // Initialize starting node
   AddToOpen(start[0], start[1], 0, Heuristic(start[0], start[1], goal[0], goal[1]), open_vec, grid);
 
+  while (!open_vec.empty()){
+    // Sort the open list and get the current node
+    CellSort(&open_vec);
+    std::vector<int> current_node = open_vec.back();
+    open_vec.pop_back();
+    // Get the x and y values of the current node and set grid[x][y] to kpath
+    int x = current_node[0];
+    int y = current_node[1];
+    grid[x][y] = State::kPath;
+
+    // Check if we've reached the goal node
+    if (x == goal[0] && y == goal[1]){
+      return grid;
+    }
+      // If we're not done, expand search to current node's neighbors. TODO
+  }
+
+  // We'ver run out of new nodes to explore and haven't found a path
   std::cout << "No path found!\n";
   std::vector<std::vector<State>> result;
   return result;
