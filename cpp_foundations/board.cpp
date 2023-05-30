@@ -89,6 +89,24 @@ int Heuristic(int x1, int y1, int x2, int y2){
 }
 
 /**
+* @brief Returns true if a cell is within bounds for the grid and not an obstacle, otherwise false
+*
+* @param[in] x: The x coordinate of the node
+* @param[in] y: The y coordinate of the node
+* @param[in] grid: A reference to the grid
+*
+* @return Returns true if a cell is within bounds for the grid and not an obstacle, otherwise false
+*/
+bool CheckValidCell(int x, int y, std::vector<std::vector<State>> &grid){
+  // Check if cell is on the grid and not an obstacle
+  if (x > 0 && x < grid.size() && y > 0 && y < grid[0].size()){
+    return grid[x][y] == State::kEmpty;
+  } else {
+    return false;
+  }
+}
+
+/**
 * @brief Adds a node to the open vector with form (x, y, g, h)
 *
 * @param[in] x: The x coordinate of the node (0,0 is top left)
