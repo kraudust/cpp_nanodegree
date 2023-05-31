@@ -7,6 +7,9 @@
 
 enum class State {kEmpty, kObstacle, kClosed, kPath};
 
+// directional deltas
+const int delta[4][2]{{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
+
 /**
 * @brief Takes a string of grid values (0's or 1's read from a file where 0 represents open and 1
 * an obstacle) and converts it to a vector of State enums
@@ -99,7 +102,7 @@ int Heuristic(int x1, int y1, int x2, int y2){
 */
 bool CheckValidCell(int x, int y, std::vector<std::vector<State>> &grid){
   // Check if cell is on the grid and not an obstacle
-  if (x > 0 && x < grid.size() && y > 0 && y < grid[0].size()){
+  if (x >= 0 && x < grid.size() && y >= 0 && y < grid[0].size()){
     return grid[x][y] == State::kEmpty;
   } else {
     return false;
@@ -109,17 +112,47 @@ bool CheckValidCell(int x, int y, std::vector<std::vector<State>> &grid){
 /**
 * @brief Adds a node to the open vector with form (x, y, g, h)
 *
-* @param[in] x: The x coordinate of the node (0,0 is top left)
-* @param[in] y: The y coordinate of the node (0,0 is top left)
+* @param[in] x: The x coordinate of the node, x represents rows (0 at the top)
+* @param[in] y: The y coordinate of the node, y represents columns (0 at left)
 * @param[in] g: The g value of the node (or accumulated cost)
 * @param[in] h: The h value (from heuristic function) for the node
 *
 */
 void AddToOpen(int x, int y, int g, int h, std::vector<std::vector<int>> &open_nodes, 
-               std::vector<std::vector<State>> &grid){
+               std::vector<std::vector<State>> &grid)
+{
   std::vector<int> node_data{x, y, g, h};
   open_nodes.push_back(node_data);
   grid[x][y] = State::kClosed;
+}
+
+/**
+* @brief Expand current nodes's neighbors and add them to the open list
+*
+* @param[in] current_node: Current node information (x, y, g, h)
+* @param[in] goal: (x, y) goal coordinates
+* @param[in] open_vec: vector of open nodes with same info listed in current node
+* @param[in] grid: state information of the grid
+*
+*/
+void ExpandNeighbors(std::vector<int> &current_node, int goal[2], 
+                     std::vector<std::vector<int>> &open_vec, std::vector<std::vector<State>> &grid)
+{
+  // Get current node's data
+  int x_cur = current_node[0];
+  int y_cur = current_node[1];
+  int g_cur = current_node[2];
+
+  // Loop through current node's potential neighbors
+  for (int i = 0; i < 4; ++i){
+    int x_new = delta[i][0] + x_cur;
+    int y_new = delta[i][1] + y_cur;
+    if (CheckValidCell(x_new, y_new, grid)){
+      int g_new = g_cur + 1;
+      int h_new = Heuristic(x_new, y_new, goal[0], goal[1]);
+      AddToOpen(x_new, y_new, g_new, h_new, open_vec, grid);
+    }
+  }
 }
 
 /**
@@ -129,7 +162,7 @@ void AddToOpen(int x, int y, int g, int h, std::vector<std::vector<int>> &open_n
 * @param[in] start: An array with the start coordinates
 * @param[in] goal: An array with the start coordinates
 *
-* @return TBD
+* @return grid containing open cells, path to goal, and obstacles
 */
 std::vector<std::vector<State>> Search(std::vector<std::vector<State>> grid, 
                                        int start[2], int goal[2]){
@@ -152,7 +185,8 @@ std::vector<std::vector<State>> Search(std::vector<std::vector<State>> grid,
     if (x == goal[0] && y == goal[1]){
       return grid;
     }
-      // If we're not done, expand search to current node's neighbors. TODO
+    // If we're not done, expand search to current node's neighbors.
+    ExpandNeighbors(current_node, goal, open_vec, grid);
   }
 
   // We'ver run out of new nodes to explore and haven't found a path
@@ -166,17 +200,19 @@ std::vector<std::vector<State>> Search(std::vector<std::vector<State>> grid,
 *
 * @param[in] state: The state to convert
 *
-* @return Either 0 string if empty space, or mountain if there is an obstacle
+* @return Either 0 string if empty space, or mountain if there is an obstacle, or car if path
 */
 std::string CellString(State state){
   std::string return_str;
   switch(state){
-    case State::kEmpty:
-      return_str = "0   ";
-      break;
     case State::kObstacle:
       return_str = "⛰️   "; // A mountain is "\u26F0   "
       break;
+    case State::kPath:
+      return_str = "🚗  ";
+      break;
+    default:
+      return_str = "0   ";
   }
   return return_str;
 }
