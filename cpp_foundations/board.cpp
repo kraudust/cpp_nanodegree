@@ -5,7 +5,7 @@
 #include <sstream>
 #include <algorithm>
 
-enum class State {kEmpty, kObstacle, kClosed, kPath};
+enum class State {kEmpty, kObstacle, kClosed, kPath, kStart, kFinish};
 
 // directional deltas
 const int delta[4][2]{{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
@@ -183,6 +183,8 @@ std::vector<std::vector<State>> Search(std::vector<std::vector<State>> grid,
 
     // Check if we've reached the goal node
     if (x == goal[0] && y == goal[1]){
+      grid[start[0]][start[1]] = State::kStart;
+      grid[x][y] = State::kFinish;
       return grid;
     }
     // If we're not done, expand search to current node's neighbors.
@@ -210,6 +212,12 @@ std::string CellString(State state){
       break;
     case State::kPath:
       return_str = "🚗  ";
+      break;
+    case State::kStart:
+      return_str = "🚦  ";
+      break;
+    case State::kFinish:
+      return_str = "🏁 ";
       break;
     default:
       return_str = "0   ";
