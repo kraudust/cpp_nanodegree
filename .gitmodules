@@ -1,9 +1,0 @@
-[submodule "cpp_foundations/open_streetmap_planner/thirdparty/P0267_RefImpl"]
-	path = cpp_foundations/open_streetmap_planner/thirdparty/P0267_RefImpl
-	url = git@github.com:cpp-io2d/P0267_RefImpl.git
-[submodule "cpp_foundations/open_streetmap_planner/thirdparty/pugixml"]
-	path = cpp_foundations/open_streetmap_planner/thirdparty/pugixml
-	url = git@github.com:zeux/pugixml.git
-[submodule "cpp_foundations/open_streetmap_planner/thirdparty/googletest"]
-	path = cpp_foundations/open_streetmap_planner/thirdparty/googletest
-	url = git@github.com:google/googletest.git
