@@ -29,6 +29,22 @@ git clone git@github.com:udacity/CppND-Route-Planning-Project.git --recurse-subm
 * IO2D
   * Installation instructions for all operating systems can be found [here](https://github.com/cpp-io2d/P0267_RefImpl/blob/master/BUILDING.md)
   * This library must be built in a place where CMake `find_package` will be able to find it
+  * When building IO2d, follow these instructions instead:
+    * install dependencies:
+      * Refresh apt: sudo apt update
+      * Install GCC: sudo apt install build-essential
+      * Install Cairo: sudo apt install libcairo2-dev
+      * Install graphicsmagick: sudo apt install libgraphicsmagick1-dev
+      * Install libpng: sudo apt install libpng-dev
+      * Set up IO2D lib
+    * build and install IO2D lib:
+      * clone repo git clone --recurse-submodules https://github.com/cpp-io2d/P0267_RefImpl
+      * enter dir and mkdir build
+      * comment out the last two build options for tests and samples in the CMakeLists.txt
+      * from the build directory run cmake: cmake --config Release "-DCMAKE_BUILD_TYPE=Release" .. (Release should be default, but just in case)
+      * compile with make -j $number of your processor threads
+      * install the library with sudo make install
+
  
 
 ## Compiling and Running
