@@ -76,11 +76,18 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
     distance = 0.0f;
     std::vector<RouteModel::Node> path_found;
 
-    // TODO: Implement your solution here.
+    while (current_node->parent != nullptr){
+      path_found.push_back(*current_node);
+      distance += current_node->distance(*(current_node->parent));
+      current_node = current_node->parent;
+    }
+    // Add the start node
+    path_found.push_back(*(this->start_node));
+    // Reverse order of vector so it is start to end order
+    std::reverse(path_found.begin(), path_found.end());
 
     distance *= m_Model.MetricScale(); // Multiply the distance by the scale of the map to get meters.
     return path_found;
-
 }
 
 
@@ -95,5 +102,4 @@ void RoutePlanner::AStarSearch() {
     RouteModel::Node *current_node = nullptr;
 
     // TODO: Implement your solution here.
-
 }
