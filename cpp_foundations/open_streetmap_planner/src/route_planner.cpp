@@ -36,7 +36,7 @@ void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
     p_node->g_value = current_node->g_value + p_node->distance(*current_node);
     p_node->parent = current_node;
     p_node->visited = true;
-    this->open_list.push_back(p_node);
+    open_list.push_back(p_node);
   }
 }
 
@@ -53,11 +53,11 @@ bool CellCompare(RouteModel::Node *node1, RouteModel::Node *node2){
 }
 RouteModel::Node *RoutePlanner::NextNode() {
   // Sort list by f value which is g value + h value
-  std::sort(this->open_list.begin(), this->open_list.end(), CellCompare);
+  std::sort(open_list.begin(), open_list.end(), CellCompare);
 
   // Grab a pointer to the node with the lowest f value then remove that node from open list
-  RouteModel::Node *next_node = this->open_list.back();
-  this->open_list.pop_back();
+  RouteModel::Node *next_node = open_list.back();
+  open_list.pop_back();
 
   return next_node;
 }
@@ -75,14 +75,13 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
     // Create path_found vector
     distance = 0.0f;
     std::vector<RouteModel::Node> path_found;
-
-    while (current_node->parent != nullptr){
+    while (current_node != start_node){
       path_found.push_back(*current_node);
       distance += current_node->distance(*(current_node->parent));
       current_node = current_node->parent;
     }
     // Add the start node
-    path_found.push_back(*(this->start_node));
+    path_found.push_back(*(start_node));
     // Reverse order of vector so it is start to end order
     std::reverse(path_found.begin(), path_found.end());
 
@@ -97,9 +96,15 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
 // - Use the NextNode() method to sort the open_list and return the next node.
 // - When the search has reached the end_node, use the ConstructFinalPath method to return the final path that was found.
 // - Store the final path in the m_Model.path attribute before the method exits. This path will then be displayed on the map tile.
-
 void RoutePlanner::AStarSearch() {
     RouteModel::Node *current_node = nullptr;
 
     // TODO: Implement your solution here.
+    current_node = start_node;
+    while (current_node != end_node){
+      AddNeighbors(current_node);
+      current_node = NextNode();
+    }
+    m_Model.path = ConstructFinalPath(current_node);
+    std::cout << "Finished search algorithm\n";
 }
