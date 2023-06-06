@@ -40,17 +40,18 @@ void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
   }
 }
 
+
+bool CellCompare(RouteModel::Node *node1, RouteModel::Node *node2){
+  float f_node1 = node1->g_value + node1->h_value;
+  float f_node2 = node2->g_value + node2->h_value;
+  return f_node1 > f_node2;
+}
 // TODO 5: Complete the NextNode method to sort the open list and return the next node.
 // Tips:
 // - Sort the open_list according to the sum of the h value and g value.
 // - Create a pointer to the node in the list with the lowest sum.
 // - Remove that node from the open_list.
 // - Return the pointer.
-bool CellCompare(RouteModel::Node *node1, RouteModel::Node *node2){
-  int f_node1 = node1->g_value + node1->h_value;
-  int f_node2 = node2->g_value + node2->h_value;
-  return f_node1 > f_node2;
-}
 RouteModel::Node *RoutePlanner::NextNode() {
   // Sort list by f value which is g value + h value
   std::sort(open_list.begin(), open_list.end(), CellCompare);
@@ -98,8 +99,6 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
 // - Store the final path in the m_Model.path attribute before the method exits. This path will then be displayed on the map tile.
 void RoutePlanner::AStarSearch() {
     RouteModel::Node *current_node = nullptr;
-
-    // TODO: Implement your solution here.
     current_node = start_node;
     while (current_node != end_node){
       AddNeighbors(current_node);
