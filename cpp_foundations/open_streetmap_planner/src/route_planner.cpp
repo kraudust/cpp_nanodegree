@@ -40,7 +40,6 @@ void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
   }
 }
 
-
 bool CellCompare(RouteModel::Node *node1, RouteModel::Node *node2){
   float f_node1 = node1->g_value + node1->h_value;
   float f_node2 = node2->g_value + node2->h_value;
@@ -100,6 +99,7 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
 void RoutePlanner::AStarSearch() {
     RouteModel::Node *current_node = nullptr;
     current_node = start_node;
+    start_node->visited = true;
     while (current_node != end_node){
       AddNeighbors(current_node);
       current_node = NextNode();
