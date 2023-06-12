@@ -31,8 +31,8 @@ Functions and classes should be headed by the following Doxygen style comment bl
 - Prefer zero spaces for private, public, and protected declarations (i.e. they should be in the same column as the class)
 - Use char \* c instead of char\* c or char \*c
 - Cuddled vs. Open Braces
-	- Use open braces for function, class, enum, and struct definitions, but cuddle braces on if, else, while, for, etc… 
-	- Exception: when an if (or while, etc.) condition is long enough to require line-wrapping, then use an open brace (i.e., don’t cuddle). 
+	- Use open braces for function, class, enum, and struct definitions, but cuddle braces on if, else, while, for, etc…
+	- Exception: when an if (or while, etc.) condition is long enough to require line-wrapping, then use an open brace (i.e., don’t cuddle).
 	- When a function call cannot fit on one line, wrap at the open parenthesis (not in between arguments) and start them on the next line with a 2-space indent. Continue with the 2-space indent on subsequent lines for more arguments.
 	- Examples:
 		```cpp
@@ -93,17 +93,17 @@ Functions and classes should be headed by the following Doxygen style comment bl
 ## Naming
 - Variable naming
 	- Use snake case (snake\_case\)
-	- global variables: lowercase with underscores prefixed with g_ 
+	- global variables: lowercase with underscores prefixed with g_
 		- Ex. g_snake_case
 	- class data members have trailing underscores
-		- local\_variable, struct\_data\_member, class\_data\_member\_    
-		- struct data members do not have trailing underscores 
+		- local\_variable, struct\_data\_member, class\_data\_member\_
+		- struct data members do not have trailing underscores
 	- constants: Variables declared constexpr or const, and whose value is fixed for the duration of the program, are named with a leading "k" followed by mixed case
-		- const int kDaysInAWeek = 7; 
-- Function and method naming 
-	- CamelCase or snake_case is acceptable, be consistent in file 
-- Classes use CamelCase 
-- Namespace names are all lowercase, with words separated by underscores 
+		- const int kDaysInAWeek = 7;
+- Function and method naming
+	- CamelCase or snake_case is acceptable, be consistent in file
+- Classes use CamelCase
+- Namespace names are all lowercase, with words separated by underscores
 - Enumerators (for both scoped and unscoped enums) should be named like constants
 	```cpp
 	enum class UrlTableError {
