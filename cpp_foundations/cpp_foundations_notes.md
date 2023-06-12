@@ -64,6 +64,7 @@ int main()
 }
 ```
 **Pointers**
+
 At this point, you might be wondering why the same symbol & can be used to both access memory addresses and, as you've seen before, pass references into a function. This is a great thing to wonder about. The overloading of the ampersand symbol & and the * symbol probably contribute to much of the confusion around pointers.
 
 The symbols & and * have a different meaning, depending on which side of an equation they appear.
@@ -124,6 +125,7 @@ std::unordered_map<int, std::string> mymap {
  };
 ```
 **Lambda Functions**
+
 Used when a function needs a function handle passed to it for a simple function. For example:
 ```cpp
 std::sort(open_list.begin(), open_list.end(),
@@ -240,6 +242,7 @@ int main () {
 }
 ```
 **Strings with mixed types**
+
 In the example above the string only had whitespaces and characters which could be converted to int. If the string has mixed types, more care is needed to process the string. In the following example, the type char is used, which is a type that can hold only a single ASCII character.
 
 In the following example, note that 3 won't be printed because it is trying to stream an int followed by a char, but since there is no char after the 3, the stream fails and the while loop exits.
