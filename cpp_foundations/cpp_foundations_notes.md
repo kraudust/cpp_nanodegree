@@ -21,7 +21,9 @@
 
 ## C++ Types and Data Structures
 Primitive types are things like string and int. You must define types for variables, but can use auto to do automatic type inference.
+
 **vector**
+
 ```cpp
 #include <iostream>
 #include <vector>
