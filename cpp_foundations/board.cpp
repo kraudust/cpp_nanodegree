@@ -18,16 +18,17 @@ const int delta[4][2]{{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
 *
 * @return A vector of State enums
 */
-std::vector<State> ParseLine(std::string line_cont){
+std::vector<State> ParseLine(std::string line_cont)
+{
   std::vector<State> board_row;
   std::istringstream board_row_stream(line_cont);
   char comma;
   int board_num;
 
-  while(board_row_stream >> board_num >> comma) {
-    if (board_num == 0){
+  while (board_row_stream >> board_num >> comma) {
+    if (board_num == 0) {
       board_row.push_back(State::kEmpty);
-    } else if (board_num == 1){
+    } else if (board_num == 1) {
       board_row.push_back(State::kObstacle);
     }
   }
@@ -42,13 +43,14 @@ std::vector<State> ParseLine(std::string line_cont){
 *
 * @return A vector of vectors of State enums representing the cells either with or without obstacles
 */
-std::vector<std::vector<State>> ReadBoardFile(std::string path){
+std::vector<std::vector<State>> ReadBoardFile(std::string path)
+{
   std::vector<std::vector<State>> board_vec;
   std::ifstream board_file;
   board_file.open(path);
-  if(board_file){
+  if (board_file) {
     std::string line;
-    while(getline(board_file, line)){
+    while (getline(board_file, line)) {
       board_vec.push_back(ParseLine(line));
     }
   }
@@ -63,7 +65,8 @@ std::vector<std::vector<State>> ReadBoardFile(std::string path){
 *
 * @return True if first node has a greater f-value than the second node
 */
-bool Compare(std::vector<int> node1, std::vector<int> node2){
+bool Compare(std::vector<int> node1, std::vector<int> node2)
+{
   int f_node1 = node1[2] + node1[3];
   int f_node2 = node2[2] + node2[3];
   return f_node1 > f_node2;
@@ -73,7 +76,8 @@ bool Compare(std::vector<int> node1, std::vector<int> node2){
  * @brief Sort the two-dimensional vector of ints in descending order.
  * @param[in] v: pointer to the list of cells (nodes) to sort (format is x, y, g, h)
  */
-void CellSort(std::vector<std::vector<int>> *v) {
+void CellSort(std::vector<std::vector<int>> * v)
+{
   std::sort(v->begin(), v->end(), Compare);
 }
 
@@ -87,7 +91,8 @@ void CellSort(std::vector<std::vector<int>> *v) {
 *
 * @return And int with the manhatten distance between the two points
 */
-int Heuristic(int x1, int y1, int x2, int y2){
+int Heuristic(int x1, int y1, int x2, int y2)
+{
   return abs(x2 - x1) + abs(y2 - y1);
 }
 
@@ -100,9 +105,10 @@ int Heuristic(int x1, int y1, int x2, int y2){
 *
 * @return Returns true if a cell is within bounds for the grid and not an obstacle, otherwise false
 */
-bool CheckValidCell(int x, int y, std::vector<std::vector<State>> &grid){
+bool CheckValidCell(int x, int y, std::vector<std::vector<State>> & grid)
+{
   // Check if cell is on the grid and not an obstacle
-  if (x >= 0 && x < grid.size() && y >= 0 && y < grid[0].size()){
+  if (x >= 0 && x < grid.size() && y >= 0 && y < grid[0].size()) {
     return grid[x][y] == State::kEmpty;
   } else {
     return false;
@@ -118,8 +124,9 @@ bool CheckValidCell(int x, int y, std::vector<std::vector<State>> &grid){
 * @param[in] h: The h value (from heuristic function) for the node
 *
 */
-void AddToOpen(int x, int y, int g, int h, std::vector<std::vector<int>> &open_nodes, 
-               std::vector<std::vector<State>> &grid)
+void AddToOpen(
+  int x, int y, int g, int h, std::vector<std::vector<int>> & open_nodes,
+  std::vector<std::vector<State>> & grid)
 {
   std::vector<int> node_data{x, y, g, h};
   open_nodes.push_back(node_data);
@@ -135,8 +142,9 @@ void AddToOpen(int x, int y, int g, int h, std::vector<std::vector<int>> &open_n
 * @param[in] grid: state information of the grid
 *
 */
-void ExpandNeighbors(std::vector<int> &current_node, int goal[2], 
-                     std::vector<std::vector<int>> &open_vec, std::vector<std::vector<State>> &grid)
+void ExpandNeighbors(
+  std::vector<int> & current_node, int goal[2],
+  std::vector<std::vector<int>> & open_vec, std::vector<std::vector<State>> & grid)
 {
   // Get current node's data
   int x_cur = current_node[0];
@@ -144,10 +152,10 @@ void ExpandNeighbors(std::vector<int> &current_node, int goal[2],
   int g_cur = current_node[2];
 
   // Loop through current node's potential neighbors
-  for (int i = 0; i < 4; ++i){
+  for (int i = 0; i < 4; ++i) {
     int x_new = delta[i][0] + x_cur;
     int y_new = delta[i][1] + y_cur;
-    if (CheckValidCell(x_new, y_new, grid)){
+    if (CheckValidCell(x_new, y_new, grid)) {
       int g_new = g_cur + 1;
       int h_new = Heuristic(x_new, y_new, goal[0], goal[1]);
       AddToOpen(x_new, y_new, g_new, h_new, open_vec, grid);
@@ -164,14 +172,15 @@ void ExpandNeighbors(std::vector<int> &current_node, int goal[2],
 *
 * @return grid containing open cells, path to goal, and obstacles
 */
-std::vector<std::vector<State>> Search(std::vector<std::vector<State>> grid, 
-                                       int start[2], int goal[2]){
+std::vector<std::vector<State>> Search(
+  std::vector<std::vector<State>> grid, int start[2], int goal[2])
+{
   // Vector of open nodes
   std::vector<std::vector<int>> open_vec;
   // Initialize starting node
   AddToOpen(start[0], start[1], 0, Heuristic(start[0], start[1], goal[0], goal[1]), open_vec, grid);
 
-  while (!open_vec.empty()){
+  while (!open_vec.empty()) {
     // Sort the open list and get the current node
     CellSort(&open_vec);
     std::vector<int> current_node = open_vec.back();
@@ -182,7 +191,7 @@ std::vector<std::vector<State>> Search(std::vector<std::vector<State>> grid,
     grid[x][y] = State::kPath;
 
     // Check if we've reached the goal node
-    if (x == goal[0] && y == goal[1]){
+    if (x == goal[0] && y == goal[1]) {
       grid[start[0]][start[1]] = State::kStart;
       grid[x][y] = State::kFinish;
       return grid;
@@ -204,11 +213,12 @@ std::vector<std::vector<State>> Search(std::vector<std::vector<State>> grid,
 *
 * @return Either 0 string if empty space, or mountain if there is an obstacle, or car if path
 */
-std::string CellString(State state){
+std::string CellString(State state)
+{
   std::string return_str;
-  switch(state){
+  switch (state) {
     case State::kObstacle:
-      return_str = "⛰️   "; // A mountain is "\u26F0   "
+      return_str = "⛰️   ";  // A mountain is "\u26F0   "
       break;
     case State::kPath:
       return_str = "🚗  ";
@@ -230,16 +240,18 @@ std::string CellString(State state){
 *
 * @param[in] board: The grid to print
 */
-void PrintBoard(std::vector<std::vector<State>> board){
-  for (std::vector<State> row: board){
-    for (State col: row) {
+void PrintBoard(std::vector<std::vector<State>> board)
+{
+  for (std::vector<State> row : board) {
+    for (State col : row) {
       std::cout << CellString(col);
     }
     std::cout << '\n';
   }
 }
 
-int main() {
+int main()
+{
   int init[2]{0, 0};
   int goal[2]{4, 5};
   std::vector<std::vector<State>> board;
