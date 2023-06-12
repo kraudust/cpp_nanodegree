@@ -3,6 +3,7 @@
 
 # Course Notes
 [Getting Started](cpp_foundations/getting_started_notes.md)
+
 [C++ Foundations](cpp_foundations/cpp_foundations_notes.md)
 ## Object Oriented Programming
 ## Memory Management
