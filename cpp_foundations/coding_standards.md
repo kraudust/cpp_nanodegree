@@ -31,8 +31,8 @@ Functions and classes should be headed by the following Doxygen style comment bl
 - Prefer zero spaces for private, public, and protected declarations (i.e. they should be in the same column as the class)
 - Use char \* c instead of char\* c or char \*c
 - Cuddled vs. Open Braces
-	- Use open braces for function, class, enum, and struct definitions, but cuddle braces on if, else, while, for, etc…
-	- Exception: when an if (or while, etc.) condition is long enough to require line-wrapping, then use an open brace (i.e., don’t cuddle).
+	- Use open braces for function, class, enum, and struct definitions, but cuddle braces  on if, else, while, for, etc.
+	- Exception: when an if (or while, etc.) condition is long enough to require line wrapping, then use an open brace (i.e., don’t cuddle).
 	- When a function call cannot fit on one line, wrap at the open parenthesis (not in between arguments) and start them on the next line with a 2-space indent. Continue with the 2-space indent on subsequent lines for more arguments.
 	- Examples:
 		```cpp
