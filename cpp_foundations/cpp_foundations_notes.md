@@ -1,7 +1,27 @@
 # Table of Contents
 1. [Intro to the C++ Language](#intro-cpp-language)
 	1. [Coding Standards](#coding-standards)
-	2. [Basics of a Program][#basics-of-a-program]
+	2. [Basics of a Program](#basics-of-a-program)
+	3. [C++ Types and Data Structures](#cpp-types-data-structures)
+		1. [vector](#vector)
+		2. [enum](#enum)
+		3. [Pointers](#pointers)
+		4. [unordered_map](#unordered-map)
+		5. [Lambda Functions](#lambda-functions)
+	4. [Comments](#comments)
+	5. [Loops](#loops)
+		1. [Post vs. Pre Increment Operator](#post-pre-increment)
+		2. [Index vs. Range Based For Loops](#index-range-for-loops)
+	6. [File Input Streams](#file-input-streams)
+	7. [const vs. constexpr](#const-vs-constexpr)
+2. [Writing Multi-file Programs](#writing-multi-file-programs)
+	1. [Including your own .h files](#include-h-files)
+	2. [Include Guards](#include-guards)
+	3. [CMake and Make](#cmake-make)
+	4. [Classes](#classes)
+		1. [This Pointer](#this-pointer)
+		2. [Inheritance](#inheritance)
+3. [Project - OpenStreetMap Route Planner](#route-planner-project)
 # Intro to the C++ Language
 - To compile a file: g++ \<filename\>, then to run it: ./a.out
 - Offline documentation: [https://zealdocs.org/](https://zealdocs.org/)
@@ -26,7 +46,7 @@
 ## C++ Types and Data Structures
 Primitive types are things like string and int. You must define types for variables, but can use auto to do automatic type inference.
 
-**vector**
+### vector
 
 ```cpp
 #include <iostream>
@@ -48,7 +68,7 @@ int main() {
     cout << "Everything worked!" << "\n";
 }
 ```
-**enum**
+### enum
 ```cpp
 #include <iostream>
 using std::cout; 
@@ -69,7 +89,7 @@ int main()
 	}
 }
 ```
-**Pointers**
+### Pointers
 
 At this point, you might be wondering why the same symbol & can be used to both access memory addresses and, as you've seen before, pass references into a function. This is a great thing to wonder about. The overloading of the ampersand symbol & and the * symbol probably contribute to much of the confusion around pointers.
 
@@ -86,7 +106,7 @@ int * pointer_to_i = &i;
 
 Once you have a pointer, you may want to retrieve the object it is pointing to. In this case, the `*` symbol can be used again. This time, however, it will appear on the right hand side of an equation or in front of an already-defined variable, so the meaning is different. In this case, it is called the "dereferencing operator", and it returns the object being pointed to.
 
-**unordered_map**
+### unordered_map
 - A map is basically a dictionary with key value pairs
 - Also known as a hash table
 - Include <unordered_map> header
@@ -130,7 +150,7 @@ std::unordered_map<int, std::string> mymap {
      {7, "c"} 
  };
 ```
-**Lambda Functions**
+### Lambda Functions
 
 Used when a function needs a function handle passed to it for a simple function. For example:
 ```cpp
@@ -491,5 +511,5 @@ class Sedan : public Car {
 
 By doing this, each Sedan class instance will have access to any of the public methods and attributes of Car. In the code above, these are IncrementDistance() and PrintCarData(). You can add additional features to the Sedan class as well. In the example above, Car is often referred to as the parent class, and Sedan as the child or derived class.
 
-## Project - OpenStreetMap Route Planner
+# Project - OpenStreetMap Route Planner
 Notes for project are [here](open_streetmap_planner/osm_project_notes.md).
