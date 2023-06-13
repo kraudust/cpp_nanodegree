@@ -1,3 +1,7 @@
+# Table of Contents
+1. [Intro to the C++ Language](#intro-cpp-language)
+	1. [Coding Standards](#coding-standards)
+	2. [Basics of a Program][#basics-of-a-program]
 # Intro to the C++ Language
 - To compile a file: g++ \<filename\>, then to run it: ./a.out
 - Offline documentation: [https://zealdocs.org/](https://zealdocs.org/)
