@@ -7,8 +7,12 @@
 [Getting Started](cpp_foundations/getting_started_notes.md)
 
 [C++ Foundations](cpp_foundations/cpp_foundations_notes.md)
-## Object Oriented Programming
-## Memory Management
-## Concurrency
-## Capstone
+
+[Object Oriented Programming](object_oriented_programming/object_oriented_programming.md)
+
+[Memory Management](memory_management/memory_management.md)
+
+[Concurrency](concurrency/concurrency.md)
+
+[Capstone](capstone/capstone.md)
 
