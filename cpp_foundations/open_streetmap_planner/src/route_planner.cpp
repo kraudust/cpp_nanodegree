@@ -12,13 +12,13 @@ RoutePlanner::RoutePlanner(RouteModel &model, float start_x, float start_y, floa
     end_node = &(m_Model.FindClosestNode(end_x, end_y));
 }
 
-float RoutePlanner::CalculateHValue(RouteModel::Node const *node) {
+float RoutePlanner::CalculateHValue(RouteModel::Node const * node) {
   return node->distance(*end_node);
 }
 
-void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
+void RoutePlanner::AddNeighbors(RouteModel::Node * current_node) {
   current_node->FindNeighbors();
-  for (RouteModel::Node *p_node: current_node->neighbors){
+  for (RouteModel::Node * p_node: current_node->neighbors){
     p_node->h_value = CalculateHValue(p_node);
     p_node->g_value = current_node->g_value + p_node->distance(*current_node);
     p_node->parent = current_node;
@@ -27,21 +27,21 @@ void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
   }
 }
 
-RouteModel::Node *RoutePlanner::NextNode() {
+RouteModel::Node * RoutePlanner::NextNode() {
   // Sort list by f value which is g value + h value
   // Use lambda function with std::sort to sort the list
   std::sort(open_list.begin(), open_list.end(),
-            [](RouteModel::Node *node1, RouteModel::Node *node2)
+            [](RouteModel::Node * node1, RouteModel::Node * node2)
             {return node1->g_value + node1->h_value > node2->g_value + node2->h_value;});
 
   // Grab a pointer to the node with the lowest f value then remove that node from open list
-  RouteModel::Node *next_node = open_list.back();
+  RouteModel::Node * next_node = open_list.back();
   open_list.pop_back();
 
   return next_node;
 }
 
-std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node *current_node) {
+std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node * current_node) {
     // Create path_found vector
     distance = 0.0f;
     std::vector<RouteModel::Node> path_found;
@@ -60,7 +60,7 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
 }
 
 void RoutePlanner::AStarSearch() {
-    RouteModel::Node *current_node = nullptr;
+    RouteModel::Node * current_node = nullptr;
     current_node = start_node;
     start_node->visited = true;
     while (current_node != end_node){
