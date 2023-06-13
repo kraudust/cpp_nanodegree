@@ -488,4 +488,4 @@ class Sedan : public Car {
 By doing this, each Sedan class instance will have access to any of the public methods and attributes of Car. In the code above, these are IncrementDistance() and PrintCarData(). You can add additional features to the Sedan class as well. In the example above, Car is often referred to as the parent class, and Sedan as the child or derived class.
 
 ## Project - OpenStreetMap Route Planner
-[Notes for project are here](osm_project_notes.md)
+Notes for project are [here](open_streetmap_planner/osm_project_notes.md).
