@@ -29,7 +29,7 @@ Functions and classes should be headed by the following Doxygen style comment bl
 - Max line length: 100 characters
 - Indentation: 2 spaces
 - Prefer zero spaces for private, public, and protected declarations (i.e. they should be in the same column as the class)
-- Use char \* c instead of char\* c or char \*c
+- Be consistent in a file with asterisk spacing for pointers char\* c or char \*c (same for references)
 - Cuddled vs. Open Braces
 	- Use open braces for function, class, enum, and struct definitions, but cuddle braces  on if, else, while, for, etc.
 	- Exception: when an if (or while, etc.) condition is long enough to require line wrapping, then use an open brace (i.e., don’t cuddle).

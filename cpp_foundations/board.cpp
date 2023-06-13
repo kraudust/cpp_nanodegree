@@ -76,7 +76,7 @@ bool Compare(std::vector<int> node1, std::vector<int> node2)
  * @brief Sort the two-dimensional vector of ints in descending order.
  * @param[in] v: pointer to the list of cells (nodes) to sort (format is x, y, g, h)
  */
-void CellSort(std::vector<std::vector<int>> * v)
+void CellSort(std::vector<std::vector<int>> *v)
 {
   std::sort(v->begin(), v->end(), Compare);
 }
