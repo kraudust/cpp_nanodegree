@@ -1,1 +1,5 @@
 .gitconfig-personal
+build
+lib
+*.out
+.obsidian
