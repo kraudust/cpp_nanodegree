@@ -295,7 +295,197 @@ When in doubt, use const, it’s much more common. When passing by reference, se
 int sum(const std::vector<int> & v)
 ```
 
+# Writing Multi-file Programs
+## Including your own .h files
 
+The \#include statement for the header used quotes " " around the file name, and not angle brackets <>. We have stored the header in the same directory as the .cpp file, and the quotes tell the preprocessor to look for the file in the same directory as the current file - not in the usual set of directories where libraries are typically stored
 
+## Include Guards
 
+```cpp
+#ifndef HEADER_EXAMPLE_H
+#define HEADER_EXAMPLE_H
+class ...
+#endif //(at end of program)
+```
 
+This is called an "include guard". Since the header will be included into another file, and \#include just pastes contents into a file, the include guard prevents the same file from being pasted multiple times into another file. This might happen if multiple files include the same header, and then are all included into the same main.cpp, for example. The ifndef checks if HEADER_EXAMPLE_H has not been defined in the file already. If it has not been defined yet, then it is defined with \#define HEADER_EXAMPLE_H, and the rest of the header is used. If HEADER_EXAMPLE_H has already been defined, then the preprocessor does not enter the ifndef block. Note: There are other ways to do this. Another common way is to use an \#pragma oncepreprocessor directive, but we won't cover that in detail here.
+
+## CMake and Make
+
+When you compile a project with g++, g++ actually performs several distinct tasks:
+1. The preprocessor runs and executes any statement beginning with a hash symbol: #, such as \#include statements. This ensures all code is in the correct location and ready to compile.
+2. Each file in the source code is compiled into an "object file" (a .o file). Object files are platform-specific machine code that will be used to create an executable.
+3. The object files are "linked" together to make a single executable. In the examples you have seen so far, this executable is a.out, but you can specify whatever name you want.
+    
+
+It is possible to have g++ perform each of the steps separately by using the -c flag. For example:
+```
+g++ -c main.cpp
+```
+
+will produce a main.o file, and that file can be converted to an executable with
+```
+g++ main.o
+```
+
+You can do this with multiple files as well with:
+```
+g++ *.cpp or g++ -c *.cpp g++ *.o
+```
+
+It’s better to use cross platform build systems for this though.
+
+**CMake and Make**
+
+CMake is an open-source, platform-independent build system. CMake uses text documents, denoted as CMakeLists.txt files, to manage build environments, like make. A comprehensive tutorial on CMake would require an entire course, but you can learn the basics of CMake here, so you'll be ready to use it in the upcoming projects.
+
+**CMakeLists.txt**
+
+CMakeList.txt files are simple text configuration files that tell CMake how to build your project. There can be multiple CMakeLists.txt files in a project. In fact, one CMakeList.txt file can be included in each directory of the project, indicating how the files in that directory should be built.
+
+These files can be used to specify the locations of necessary packages, set build flags and environment variables, specify build target names and locations, and other actions.
+
+The first lines that you'll want in your CMakeLists.txt are lines that specifies the minimum versions of cmake and C++ required to build the project. Add the following lines to your CMakeLists.txt and save the file:
+
+```
+cmake_minimum_required(VERSION 3.5.1)
+set(CMAKE_CXX_STANDARD 14)
+```
+
+These lines set the minimum cmake version required to 3.5.1 and set the environment variable CMAKE_CXX_STANDARD so CMake uses C++ 14. On your own computer, if you have a recent g++ compiler, you could use C++ 17 instead.
+
+CMake requires that we name the project, so you should choose a name for the project and then add the following line to CMakeLists.txt:
+
+```
+project(<your_project_name>)
+```
+
+You can choose any name you want, but be sure to change <your_project_name> to the actual name of the project!
+
+Next, we want to add an executable to this project. You can do that with the add_executable command by specifying the executable name, along with the locations of all the source files that you will need. CMake has the ability to automatically find source files in a directory, but for now, you can just specify each file needed:
+
+```
+add_executable(your_executable_name  path_to_file_1  path_to_file_2 ...)
+```
+
+Hint: The source files you need are the three .cpp files in the src/ directory. You can specify the path relative to the CMakeLists.txt file, so src/main.cpp would work, for example.
+
+A typical CMake project will have a build directory in the same place as the top-level CMakeLists.txt. Make a build directory in the /home/workspace/cmake_example folder:
+
+```
+root@abc123defg:/home/workspace/cmake_example# mkdir build
+root@abc123defg:/home/workspace/cmake_example# cd build
+```
+
+From within the build directory, you can now run CMake as follows:
+```
+root@abc123defg:/home/workspace/cmake_example/build# cmake ..
+root@abc123defg:/home/workspace/cmake_example/build# make
+```
+
+The first line directs the cmake command at the top-level CMakeLists.txt file with ... This command uses the CMakeLists.txt to configure the project and create a Makefile in the build directory.
+
+In the second line, make finds the Makefile and uses the instructions in the Makefile to build the project.
+
+Now that your project builds correctly, try modifying one of the files. When you are ready to run the project again, you'll only need to run the make command from the build folder, and only that file will be compiled again. Try it now!
+
+In general, CMake only needs to be run once for a project, unless you are changing build options (e.g. using different build flags or changing where you store your files).
+
+Make will be able to keep track of which files have changed and compile only those that need to be compiled before building.
+
+Note: If you do re-run CMake, or if you are having problems with your build, it can be helpful to delete your build directory and start from scratch. Otherwise, some environment variables may not be reset correctly.
+
+## Classes
+
+Examples of class:
+
+car.h
+```cpp
+#ifndef CAR_H
+#define CAR_H
+
+#include <string>
+using std::string;
+using std::cout;
+
+class Car {
+  public:
+    void PrintCarData();
+    void IncrementDistance();
+    // Using a constructor list in the constructor:
+    Car(string c, int n) : color(c), number(n) {}
+  // The variables do not need to be accessed outside of
+  // functions from this class, so we can set them to private.
+  private:
+    string color;
+    int distance = 0;
+    int number;
+};
+#endif
+```
+
+car.cpp
+
+```cpp
+
+#include <iostream>
+#include "car.h"
+
+// Method definitions for the Car class.
+void Car::PrintCarData() 
+{
+    cout << "The distance that the " << color << " car " << number << " has traveled is: " << distance << "\n";
+}
+
+void Car::IncrementDistance() 
+{
+    distance++;
+}
+```
+
+Note: Arrow operator -> dereferences a pointer to an object and accesses an attribute or method. The following are equivalent:
+```cpp
+car_pointer->IncrementDistance();
+(*car_pointer).IncrementDistance();
+```
+
+### This Pointer
+
+When working with classes it is often helpful to be able to refer to the current class instance or object. Example:
+
+```cpp
+// The Car class
+class Car {
+  public:
+    // Method to print data.
+    void PrintCarData() {
+        cout << "The distance that the " << this->color << " car " << this->number << " has traveled is: " << this->distance << "\n";
+    }
+
+    // Method to increment the distance travelled.
+    void IncrementDistance() {
+        this->distance++;
+    }
+
+    // Class/object attributes
+    string color;
+    int distance = 0;
+    int number;
+};
+```
+
+### Inheritance
+
+It is possible for a class to use methods and attributes from another class using class inheritance. For example, if you wanted to make a Sedan class with additional attributes or methods not found in the generic Car class, you could create a Sedan class that inherited from the Car by using the colon notation:
+
+```cpp
+class Sedan : public Car {
+    // Sedan class declarations/definitions here.
+};
+```
+
+By doing this, each Sedan class instance will have access to any of the public methods and attributes of Car. In the code above, these are IncrementDistance() and PrintCarData(). You can add additional features to the Sedan class as well. In the example above, Car is often referred to as the parent class, and Sedan as the child or derived class.
+
+## Project - OpenStreetMap Route Planner
+[Notes for project are here](osm_project_notes.md)
