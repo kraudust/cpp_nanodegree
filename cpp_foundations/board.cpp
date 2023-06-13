@@ -76,7 +76,7 @@ bool Compare(std::vector<int> node1, std::vector<int> node2)
  * @brief Sort the two-dimensional vector of ints in descending order.
  * @param[in] v: pointer to the list of cells (nodes) to sort (format is x, y, g, h)
  */
-void CellSort(std::vector<std::vector<int>> *v)
+void CellSort(std::vector<std::vector<int>>* v)
 {
   std::sort(v->begin(), v->end(), Compare);
 }
@@ -125,8 +125,8 @@ bool CheckValidCell(int x, int y, std::vector<std::vector<State>> & grid)
 *
 */
 void AddToOpen(
-  int x, int y, int g, int h, std::vector<std::vector<int>> & open_nodes,
-  std::vector<std::vector<State>> & grid)
+  int x, int y, int g, int h, std::vector<std::vector<int>>& open_nodes,
+  std::vector<std::vector<State>>& grid)
 {
   std::vector<int> node_data{x, y, g, h};
   open_nodes.push_back(node_data);
@@ -143,8 +143,8 @@ void AddToOpen(
 *
 */
 void ExpandNeighbors(
-  std::vector<int> & current_node, int goal[2],
-  std::vector<std::vector<int>> & open_vec, std::vector<std::vector<State>> & grid)
+  std::vector<int>& current_node, int goal[2],
+  std::vector<std::vector<int>>& open_vec, std::vector<std::vector<State>>& grid)
 {
   // Get current node's data
   int x_cur = current_node[0];
