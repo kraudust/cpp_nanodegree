@@ -2,7 +2,7 @@
 1. [Intro to the C++ Language](#intro-to-the-c-language)
 	1. [Coding Standards](#coding-standards)
 	2. [Basics of a Program](#basics-of-a-program)
-	3. [C++ Types and Data Structures](#c-types-and-data-structuress)
+	3. [C++ Types and Data Structures](#c-types-and-data-structures)
 		1. [vector](#vector)
 		2. [enum](#enum)
 		3. [Pointers](#pointers)
