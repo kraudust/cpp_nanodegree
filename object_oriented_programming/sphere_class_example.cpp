@@ -29,6 +29,7 @@ public:
 
 private:
   // Private members
+  static float constexpr kPi{3.14159}; 
   int radius_;
   float volume_;
   /**
@@ -49,7 +50,7 @@ void Sphere::SetVolume()
   if (radius_ <= 0) {
     throw std::invalid_argument("radius must be positive");
   }
-  volume_ = M_PI * 4./3. * pow(radius_, 3);
+  volume_ = kPi * 4./3. * pow(radius_, 3);
 }
 
 void Sphere::Radius(int radius)
@@ -57,6 +58,17 @@ void Sphere::Radius(int radius)
   radius_ = radius;
   SetVolume();
 }
+
+// Show static members example with this class
+class Sphere2 {
+public:
+  static float Volume(int radius)
+  {
+    return pi_ * 4/3 * pow(radius,3);
+  }
+private:
+  static float constexpr pi_{3.14159};
+};
 
 // Test
 int main(void) {
@@ -75,4 +87,6 @@ int main(void) {
     caught = true;
   }
   assert(caught);
+
+  assert(abs(Sphere2::Volume(5) - 523.6) < 1);
 }

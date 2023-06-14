@@ -12,6 +12,8 @@
 	8. [Access Modifiers](#access-modifiers)
 	9. [Abstraction](#abstraction)
 	10. [Static Members](#static-members)
+	11. [Static Methods](#static-methods)
+	12. [Const Data Members](#const-data-members)
 # Structures
 
 Allows developers to create their own types to aggregate data relevant to their needs.
@@ -367,3 +369,100 @@ If the designer of this class ever decides to change how the data is stored inte
 See [sphere_class_example](sphere_class_example.cpp) for another example of abstraction.
 
 ## Static Members
+
+Class members can be declared `static`, which means that the member belongs to the entire class, instead of to a specific instance of the class. More specifically, a `static` member is created only once and then shared by all instances (i.e. objects) of the class. All instances of that class will refer to the same memory location for that static variable. That means that if the `static` member gets changed, either by a user of the class or within a member function of the class itself, then all members of the class will see that change the next time they access the `static` member.
+
+`static` members are **declared** within their `class` (often in a header file) but in most cases they must be **defined** within the global scope. That's because memory is allocated for `static` variables immediately when the program begins, at the same time any global variables are initialized.
+
+Here is an example:
+```cpp
+#include <iostream>
+
+class Foo {
+ public:
+  static int count;
+  Foo() { Foo::count += 1; }
+};
+
+int Foo::count{0};
+
+int main() {
+  Foo f;
+  std::cout << f.count << std::endl; // 1
+  Foo f2;
+  std::cout << f.count << ", " << f2.count << std::endl; // 2, 2
+  Foo f3;
+  std::cout << f.count << ", " << f2.count << ", " << f3.count << std::endl; // 3, 3, 3
+  std::cout << &(f.count) << ", " << &(f2.count) << ", " << &(f3.count) << std::endl; // same address!
+  std::cout << Foo::count << std::endl; // Can access the static data member without a class instantiation
+  std::cout << Foo::count << std::endl; // 3
+}
+```
+
+An exception to the global definition of `static` members is if such members can be marked as [`constexpr`](https://en.cppreference.com/w/cpp/language/constexpr). In that case, the `static` member variable can be both declared and defined within the `class` definition:
+
+```cpp
+struct Kilometer {
+  static constexpr int meters{1000};
+};
+```
+
+## Static Methods
+
+In addition to `static` member variables, C++ supports `static` member functions (or "methods"). Just like `static` member variables, `static` member functions are instance-independent: they belong to the class, not to any particular instance of the class.
+
+One corollary to this is that we can method invoke a `static` member function _without ever creating an instance of the class_. Static member functions can not access instance member variables. Static member functions are for static member variables only.
+
+```cpp
+#include <cassert>
+#include <cmath>
+#include <stdexcept>
+
+class Sphere {
+public:
+  static float Volume(int radius) {
+    return pi_ * 4/3 * pow(radius,3);
+  }
+
+private:
+  static float constexpr pi_{3.14159};
+};
+
+// Test
+int main(void)
+{
+  assert(abs(Sphere::Volume(5) - 523.6) < 1);
+}
+```
+
+## Const Data Members
+
+Data that shouldn't be changed should be declared as const. 
+
+There are 2 ways to initialize const data members.
+- Initialize in the class
+- From outside the class using an initializer list
+
+Example:
+```cpp
+#include <iostream>
+
+class Phone
+{
+public:
+	Phone(std::string str) : phone_name(str) {}
+	std::string GetPhoneName() {return phone_name;}
+	std::string GetPhoneMake() {return phone_make;}
+private:
+	const std::string phone_name;
+	const std::string phone_make = "Motorola";
+};
+
+int main()
+{
+	Phone p1("Moto G4");
+	std::cout << p1.getPhoneName() << std::endl;
+	std::cout << p1.getPhoneMake() << std::endl;
+	return 0;
+}
+```
