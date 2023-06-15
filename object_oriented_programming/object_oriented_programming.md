@@ -215,7 +215,7 @@ This exercise showcases several advantages of initializer lists.
 struct Person {
 public:
   Person(std::string name) : name(name) {}
-  std::string const name;
+  const std::string name;
 };
 
 // Test
