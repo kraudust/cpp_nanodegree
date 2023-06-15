@@ -5,6 +5,15 @@
 	2. [Scope Resolution](#scope-resolution)
 	3. [Namespaces](#namespaces)
 	4. [Initializer Lists](#initializer-lists)
+		1. [Use initializer lists to set constants](#use-initializer-lists-to-set-constants)
+	5. [Encapsulation](#encapsulation)
+	6. [Accessors](#accessors)
+	7. [Mutators](#mutators)
+	8. [Access Modifiers](#access-modifiers)
+	9. [Abstraction](#abstraction)
+	10. [Static Members](#static-members)
+	11. [Static Methods](#static-methods)
+	12. [Const Data Members](#const-data-members)
 # Structures
 
 Allows developers to create their own types to aggregate data relevant to their needs.
@@ -217,8 +226,243 @@ int main() {
 }
 ```
 
+## Encapsulation
 
+[Encapsulation](https://en.wikipedia.org/wiki/Encapsulation_(computer_programming%29)) is the grouping together of data and logic into a single unit. In object-oriented programming, classes encapsulate data and functions that operate on that data.
 
+This can be a delicate balance, because on the one hand we want to group together relevant data and functions, but on the hand we want to [limit member functions to only those functions that need direct access to the representation of a class](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#c4-make-a-function-a-member-only-if-it-needs-direct-access-to-the-representation-of-a-class).
 
+In the context of a `Date` class, a function `Date Tomorrow(Date const & date)` probably does not need to be encapsulated as a class member. It can exist outside the `Date` class.
 
+However, a function that calculates the number of days in a month probably should be encapsulated with the class, because the class needs this function in order to operate correctly.
 
+More Date class example of functions that could be captured in this class:
+```cpp
+#include <cassert>
+
+class Date {
+public:
+  Date(int day, int month, int year);
+  int Day() const { return day_; }
+  void Day(int day);
+  int Month() const { return month_; }
+  void Month(int month);
+  int Year() const { return year_; }
+  void Year(int year);
+
+private:
+  bool LeapYear(int year) const;
+  int DaysInMonth(int month, int year) const;
+  int day_{1};
+  int month_{1};
+  int year_{0};
+};
+
+Date::Date(int day, int month, int year) {
+  Year(year);
+  Month(month);
+  Day(day);
+}
+
+bool Date::LeapYear(int year) const {
+    if(year % 4 != 0)
+        return false;
+    else if(year % 100 != 0)
+        return true;
+    else if(year % 400 != 0)
+        return false;
+    else
+        return true;
+}
+
+int Date::DaysInMonth(int month, int year) const {
+    if(month == 2)
+        return LeapYear(year) ? 29 : 28;
+    else if(month == 4 || month == 6 || month == 9 || month == 11)
+        return 30;
+    else
+        return 31;
+}
+
+void Date::Day(int day) {
+  if (day >= 1 && day <= DaysInMonth(Month(), Year()))
+    day_ = day;
+}
+
+void Date::Month(int month) {
+  if (month >= 1 && month <= 12)
+    month_ = month;
+}
+
+void Date::Year(int year) { year_ = year; }
+
+// Test
+int main() {
+  Date date(29, 2, 2016);
+  assert(date.Day() == 29);
+  assert(date.Month() == 2);
+  assert(date.Year() == 2016);
+    
+  Date date2(29, 2, 2019);
+  assert(date2.Day() != 29);
+  assert(date2.Month() == 2);
+  assert(date2.Year() == 2019);
+}
+```
+
+## Accessors
+
+Accessor functions are public member functions that allow users to access an object's data, albeit indirectly.
+
+Accessors should only retrieve data. They should not change the data stored in the object.
+
+The main role of the `const` specifier in accessor methods is to protect member data. When you specify a member function as `const`, the compiler will prohibit that function from changing any of the object's member data.
+
+Using the same Date class from above, the following is an example of a accessor (getter).
+
+```cpp
+int Day() const { return day_; }
+```
+
+## Mutators
+
+A mutator ("setter") function can apply logic ("invariants") when updating member data. Keeps users from setting member data to an invalid state.
+
+Example from Date class above:
+```cpp
+void Day(int day);
+void Date::Day(int day) {
+  if (day >= 1 && day <= DaysInMonth(Month(), Year()))
+    day_ = day;
+}
+```
+
+## Access Modifiers
+
+- Public: access to anyone
+- Private: access only within the class
+- Protected: access only within friend classes (and the class) 
+
+Learn more [here](https://www.tutorialspoint.com/cplusplus/cpp_class_access_modifiers.htm)
+
+## Abstraction
+
+Abstraction refers to the separation of a class's interface from the details of its implementation. The interface provides a way to interact with an object, while hiding the details and implementation of how the class works.
+
+The `String()` function within this `Date` class is an example of abstraction.
+
+```cpp
+class Date {
+ public:
+  ...
+  std::string String() const;
+  ...
+};
+```
+
+The user is able to interact with the `Date` class through the `String()` function, but the user does not need to know about the implementation of either `Date` or `String()`.
+
+For example, the user does not know, or need to know, that this object internally contains three `int` member variables. The user can just call the `String()` method to get data.
+
+If the designer of this class ever decides to change how the data is stored internally -- using a vector of `int`s instead of three separate `int`s, for example -- the user of the `Date` class will not need to know.
+
+See [sphere_class_example](sphere_class_example.cpp) for another example of abstraction.
+
+## Static Members
+
+Class members can be declared `static`, which means that the member belongs to the entire class, instead of to a specific instance of the class. More specifically, a `static` member is created only once and then shared by all instances (i.e. objects) of the class. All instances of that class will refer to the same memory location for that static variable. That means that if the `static` member gets changed, either by a user of the class or within a member function of the class itself, then all members of the class will see that change the next time they access the `static` member.
+
+`static` members are **declared** within their `class` (often in a header file) but in most cases they must be **defined** within the global scope. That's because memory is allocated for `static` variables immediately when the program begins, at the same time any global variables are initialized.
+
+Here is an example:
+```cpp
+#include <iostream>
+
+class Foo {
+ public:
+  static int count;
+  Foo() { Foo::count += 1; }
+};
+
+int Foo::count{0};
+
+int main() {
+  Foo f;
+  std::cout << f.count << std::endl; // 1
+  Foo f2;
+  std::cout << f.count << ", " << f2.count << std::endl; // 2, 2
+  Foo f3;
+  std::cout << f.count << ", " << f2.count << ", " << f3.count << std::endl; // 3, 3, 3
+  std::cout << &(f.count) << ", " << &(f2.count) << ", " << &(f3.count) << std::endl; // same address!
+  std::cout << Foo::count << std::endl; // Can access the static data member without a class instantiation
+  std::cout << Foo::count << std::endl; // 3
+}
+```
+
+An exception to the global definition of `static` members is if such members can be marked as [`constexpr`](https://en.cppreference.com/w/cpp/language/constexpr). In that case, the `static` member variable can be both declared and defined within the `class` definition:
+
+```cpp
+struct Kilometer {
+  static constexpr int meters{1000};
+};
+```
+
+## Static Methods
+
+In addition to `static` member variables, C++ supports `static` member functions (or "methods"). Just like `static` member variables, `static` member functions are instance-independent: they belong to the class, not to any particular instance of the class.
+
+One corollary to this is that we can method invoke a `static` member function _without ever creating an instance of the class_. Static member functions can not access instance member variables. Static member functions are for static member variables only.
+
+```cpp
+#include <cassert>
+#include <cmath>
+#include <stdexcept>
+
+class Sphere {
+public:
+  static float Volume(int radius) {
+    return pi_ * 4/3 * pow(radius,3);
+  }
+
+private:
+  static float constexpr pi_{3.14159};
+};
+
+// Test
+int main(void)
+{
+  assert(abs(Sphere::Volume(5) - 523.6) < 1);
+}
+```
+
+## Const Data Members
+
+Data that shouldn't be changed should be declared as const. 
+
+There are 2 ways to initialize const data members.
+- Initialize in the class
+- From outside the class using an initializer list
+
+Example:
+```cpp
+#include <iostream>
+
+class Phone
+{
+public:
+	Phone(std::string str) : phone_name(str) {}
+	std::string GetPhoneName() {return phone_name;}
+	std::string GetPhoneMake() {return phone_make;}
+private:
+	const std::string phone_name;
+	const std::string phone_make = "Motorola";
+};
+
+int main()
+{
+	Phone p1("Moto G4");
+	std::cout << p1.getPhoneName() << std::endl;
+	std::cout << p1.getPhoneMake() << std::endl;
+	return 0;
+}
+```
