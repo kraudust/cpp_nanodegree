@@ -16,3 +16,12 @@
 
 [Capstone](capstone/capstone.md)
 
+# THINGS TO LEARN STILL
+
+- Anonymous namespaces
+- Static functions outside of a class
+- const use placement (before and after functions etc.)
+	- For example: `const urdf_model::Model& get_urdf_model() const;`
+- Understand strings vs. char array and pointers to them and what a string literal is
+- extern
+- explicit keyword for class methods
