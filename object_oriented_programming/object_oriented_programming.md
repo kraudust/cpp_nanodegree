@@ -14,6 +14,11 @@
 	10. [Static Members](#static-members)
 	11. [Static Methods](#static-methods)
 	12. [Const Data Members](#const-data-members)
+	13. [Polymorphism and Inheritance](#polymorphism-and-inheritance)
+		1. [Inheritance](#inheritance)
+			1. [Inherited Access Specifiers](#inherited-access-specifiers)
+		2. [Composition](#composition)
+		3. [Friends](#friends)
 # Structures
 
 Allows developers to create their own types to aggregate data relevant to their needs.
@@ -466,3 +471,198 @@ int main()
 	return 0;
 }
 ```
+
+## Polymorphism and Inheritance
+### Inheritance
+
+- Top level class is parent class or base class. 
+- Class that inherits from it is called derived class or child class.
+
+Syntax Example:
+```cpp
+#include <iostream>
+#include <string>
+using std::string;
+
+class Vehicle {
+public:
+    int wheels = 0;
+    string color = "blue";
+    string make  = "generic";
+    
+    void Print() const
+    {
+        std::cout << "This " << color << " " << make << " vehicle has " << wheels << " wheels!\n";
+    }
+};
+
+class Car : public Vehicle {
+public:
+    bool sunroof = false;
+};
+
+// Example of multi-level inheritance
+class Sedan : public Car {
+public:
+    int doors{4};
+};
+
+class Bicycle : public Vehicle {
+public:
+    bool kickstand = true;
+};
+
+class Scooter : public Vehicle {
+public:
+    bool electric = false;
+};
+
+int main() 
+{
+    Scooter scooter;
+    scooter.wheels = 2;
+    scooter.Print();
+};
+```
+
+#### Inherited Access Specifiers
+
+Just as access specifiers (i.e. `public`, `protected`, and `private`) define which class members _users_ can access, the same access modifiers also define which class members _users of a derived classes_ can access.
+
+[Public inheritance:](https://en.cppreference.com/w/cpp/language/derived_class#Public_inheritance) the public and protected members of the base class listed after the specifier keep their member access in the derived class
+
+[Protected inheritance:](https://en.cppreference.com/w/cpp/language/derived_class#Protected_inheritance) the public and protected members of the base class listed after the specifier are protected members of the derived class
+
+[Private inheritance:](https://en.cppreference.com/w/cpp/language/derived_class#Private_inheritance) the public and protected members of the base class listed after the specifier are private members of the derived class
+
+Example:
+
+```cpp
+// This example demonstrates the privacy levels
+// between parent and child classes
+#include <iostream>
+#include <string>
+using std::string;
+
+class Vehicle {
+public:
+    int wheels = 0;
+    string color = "blue";
+    
+    void Print() const
+    {
+        std::cout << "This " << color << " vehicle has " << wheels << " wheels!\n";
+    }
+};
+
+class Car : public Vehicle {
+public:
+    bool sunroof = false;
+};
+
+class Bicycle : protected Vehicle {
+public:
+    bool kickstand = true;
+};
+
+class Scooter : private Vehicle {
+public:
+    bool electric = false;
+};
+
+int main() 
+{
+    Car car;
+    car.wheels = 4;
+	// The following will produce errors and won't compile
+    //Bicycle bicycle;
+    //bicycle.wheels = 2;
+    //Scooter scooter;
+    //scooter.wheels = 1;
+};
+```
+
+### Composition
+
+[Composition](https://en.wikipedia.org/wiki/Composition_over_inheritance) is a closely related alternative to inheritance. Composition involves constructing ("composing") classes from other classes, instead of inheriting traits from a parent class.
+
+A common way to distinguish "composition" from "inheritance" is to think about what an object can do, rather than what it is. This is often expressed as [**"has a"**](https://en.wikipedia.org/wiki/Has-a) versus [**"is a"**](https://en.wikipedia.org/wiki/Is-a).
+
+From the standpoint of composition, a cat "has a" head and "has a" set of paws and "has a" tail.
+
+From the standpoint of inheritance, a cat "is a" mammal.
+
+There is [no hard and fast rule](https://www.google.com/search?q=when+to+use+composition+and+when+to+use+inheritance&oq=when+to+use+composition+and+when+to+use+inheritance) about when to prefer composition over inheritance. In general, if a class needs only extend a small amount of functionality beyond what is already offered by another class, it makes sense to **inherit** from that other class. However, if a class needs to contain functionality from a variety of otherwise unrelated classes, it makes sense to **compose** the class from those other classes.
+
+Example:
+
+```cpp
+#include <iostream>
+#include <cmath>
+#include <assert.h>
+
+// Define LineSegment struct
+struct LineSegment {
+// Define protected attribute length
+public:
+    double length;
+};
+
+// Define Circle class
+public:
+    Circle(LineSegment& radius);
+    double Area();
+
+private:
+    LineSegment& radius_;
+};
+
+// Declare Circle class
+Circle::Circle(LineSegment& radius) : radius_(radius) {}
+
+double Circle::Area() 
+{
+    return pow(Circle::radius_.length, 2) * M_PI;
+}
+
+// Test in main()
+int main() 
+{
+    LineSegment radius {3};
+    Circle circle(radius);
+    assert(int(circle.Area()) == 28);
+}
+```
+
+### Friends
+
+In C++, `friend` classes provide an alternative inheritance mechanism to derived classes. The main difference between classical inheritance and friend inheritance is that a `friend` class can access private members of the base class, which isn't the case for classical inheritance. In classical inheritance, a derived class can only access public and protected members of the base class.
+
+Example:
+```cpp
+#include <cassert>
+
+class Heart {
+private:
+	int rate{80};
+	friend class Human;
+};
+
+class Human {
+public:
+	Heart heart;
+	void Exercise() {heart.rate = 150;}
+	int HeartRate() {return heart.rate;}
+};
+
+int main() {
+	Human human;
+	assert(human.HeartRate() == 80);
+	human.Exercise();
+	assert(human.HeartRate() == 150);
+}
+```
+
+### Polymorphism
+
+
