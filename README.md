@@ -20,6 +20,7 @@
 
 - Anonymous namespaces
 - Static functions outside of a class
+- Singleton
 - Understand strings vs. char array and pointers to them and what a string literal is
 - extern
 - explicit keyword for class methods
