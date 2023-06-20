@@ -22,7 +22,9 @@
 		4. [Polymorphism Overloading](#polymorphism-overloading)
 		5. [Polymorphism Operator Overloading](#polymorphism-operator-overloading)
 		6. [Polymorphism Overriding](#polymorphism-overriding)
-	14. [Virtual Functions](#virtual-functions)
+		7. [Virtual Functions](#virtual-functions)
+		8. [Multiple Inheritance](#multiple-inheritance)
+3. [Generic Programming (Templates)](#generic-programming-(templates))
 # Structures
 
 Allows developers to create their own types to aggregate data relevant to their needs.
@@ -749,7 +751,61 @@ Overriding a function occurs when:
 
 See [example](#virtual_func_overriding_ex) in virtual functions section. 
 
-## Virtual Functions
+**`override` keyword**
+
+This specification tells both the compiler and the human programmer that the purpose of this function is to override a virtual function. The compiler will verify that a function specified as `override` does indeed override some other virtual function, or otherwise the compiler will generate an error.
+
+Specifying a function as `override` is [good practice](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rh-override), as it empowers the compiler to verify the code, and communicates the intention of the code to future users.
+
+For example:
+```cpp
+class Shape {
+public:
+  virtual double Area() const = 0;
+  virtual double Perimeter() const = 0;
+};
+
+class Circle : public Shape {
+public:
+  Circle(double radius) : radius_(radius) {}
+  double Area() const override { return pow(radius_, 2) * PI; } // specified as an override function
+  double Perimeter() const override { return 2  *radius_*  PI; } // specified as an override function
+
+private:
+  double radius_;
+};
+```
+
+
+**Function Hiding**
+
+Function hiding is [closely related, but distinct from](https://stackoverflow.com/questions/19736281/what-are-the-differences-between-overriding-virtual-functions-and-hiding-non-vir), overriding.
+
+A derived class hides a base class function, as opposed to overriding it, if the base class function is not specified to be `virtual`.
+
+```cpp
+class Cat {
+public:
+  std::string Talk() const { return std::string("Meow"); }
+};
+
+class Lion : public Cat {
+public:
+  std::string Talk() const { return std::string("Roar"); }
+};
+```
+
+In this example, `Cat` is the base class and `Lion` is the derived class. Both `Cat` and `Lion` have `Talk()` member functions.
+
+When an object of type `Lion` calls `Talk()`, the object will run `Lion::Talk()`, not `Cat::Talk()`.
+
+In this situation, `Lion::Talk()` is _hiding_ `Cat::Talk()`. If `Cat::Talk()` were `virtual`, then `Lion::Talk()` would _override_ `Cat::Talk()`, instead of _hiding_ it. _Overriding_ requires a `virtual` function in the base class.
+
+The distinction between _overriding_ and _hiding_ is subtle and not terribly significant, but in certain situations _hiding_ [can lead to bizarre errors](https://isocpp.org/wiki/faq/strange-inheritance), particularly when the two functions have slightly different function signatures.
+
+
+
+### Virtual Functions
 
 Virtual functions are a polymorphic feature. These functions are declared (and possibly defined) in a base class, and can be overridden by derived classes.
 
@@ -809,7 +865,41 @@ int main() {
 }
 ```
 
+### Multiple Inheritance
 
+The Core Guidelines have some worthwhile recommendations about how and when to use multiple inheritance:
 
+- ["Use multiple inheritance to represent multiple distinct interfaces"](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#c135-use-multiple-inheritance-to-represent-multiple-distinct-interfaces)
+- ["Use multiple inheritance to represent the union of implementation attributes"](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#c136-use-multiple-inheritance-to-represent-the-union-of-implementation-attributes)
+
+Example:
+```cpp
+#include <cassert>
+#include <iostream>
+
+class Car {
+public:
+	std::string Drive() {return "I'm driving!";}
+};
+
+class Boat {
+public:
+	std::string Drive() {return "I'm cruising!";}
+};
+
+class AmphibiousCar : public Boat, public Car {};
+
+int main() {
+	Car car;
+	Boat boat;
+	AmphibiousCar duck;
+	assert(duck.Drive() = car.Drive());
+	assert(duck.Cruise() == boat.Cruise());
+}
+```
+
+## Generic Programming (Templates)
+
+An example of generic programming is the vector class. You can create a vector of any type of object (string, int, custom user defined class, etc.).
 
 
