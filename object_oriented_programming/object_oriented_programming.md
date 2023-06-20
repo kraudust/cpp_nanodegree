@@ -14,6 +14,20 @@
 	10. [Static Members](#static-members)
 	11. [Static Methods](#static-methods)
 	12. [Const Data Members](#const-data-members)
+	13. [Polymorphism and Inheritance](#polymorphism-and-inheritance)
+		1. [Inheritance](#inheritance)
+			1. [Inherited Access Specifiers](#inherited-access-specifiers)
+		2. [Composition](#composition)
+		3. [Friends](#friends)
+		4. [Polymorphism Overloading](#polymorphism-overloading)
+		5. [Polymorphism Operator Overloading](#polymorphism-operator-overloading)
+		6. [Polymorphism Overriding](#polymorphism-overriding)
+		7. [Virtual Functions](#virtual-functions)
+		8. [Multiple Inheritance](#multiple-inheritance)
+3. [Generic Programming (Templates)](#generic-programming-templates)
+	1. [Template Deduction](#template-deduction)
+	2. [Class Templates](#class-templates)
+
 # Structures
 
 Allows developers to create their own types to aggregate data relevant to their needs.
@@ -466,3 +480,523 @@ int main()
 	return 0;
 }
 ```
+
+## Polymorphism and Inheritance
+### Inheritance
+
+- Top level class is parent class or base class. 
+- Class that inherits from it is called derived class or child class.
+
+Syntax Example:
+```cpp
+#include <iostream>
+#include <string>
+using std::string;
+
+class Vehicle {
+public:
+    int wheels = 0;
+    string color = "blue";
+    string make  = "generic";
+    
+    void Print() const
+    {
+        std::cout << "This " << color << " " << make << " vehicle has " << wheels << " wheels!\n";
+    }
+};
+
+class Car : public Vehicle {
+public:
+    bool sunroof = false;
+};
+
+// Example of multi-level inheritance
+class Sedan : public Car {
+public:
+    int doors{4};
+};
+
+class Bicycle : public Vehicle {
+public:
+    bool kickstand = true;
+};
+
+class Scooter : public Vehicle {
+public:
+    bool electric = false;
+};
+
+int main() 
+{
+    Scooter scooter;
+    scooter.wheels = 2;
+    scooter.Print();
+};
+```
+
+#### Inherited Access Specifiers
+
+Just as access specifiers (i.e. `public`, `protected`, and `private`) define which class members _users_ can access, the same access modifiers also define which class members _users of a derived classes_ can access.
+
+[Public inheritance:](https://en.cppreference.com/w/cpp/language/derived_class#Public_inheritance) the public and protected members of the base class listed after the specifier keep their member access in the derived class
+
+[Protected inheritance:](https://en.cppreference.com/w/cpp/language/derived_class#Protected_inheritance) the public and protected members of the base class listed after the specifier are protected members of the derived class
+
+[Private inheritance:](https://en.cppreference.com/w/cpp/language/derived_class#Private_inheritance) the public and protected members of the base class listed after the specifier are private members of the derived class
+
+Example:
+
+```cpp
+// This example demonstrates the privacy levels
+// between parent and child classes
+#include <iostream>
+#include <string>
+using std::string;
+
+class Vehicle {
+public:
+    int wheels = 0;
+    string color = "blue";
+    
+    void Print() const
+    {
+        std::cout << "This " << color << " vehicle has " << wheels << " wheels!\n";
+    }
+};
+
+class Car : public Vehicle {
+public:
+    bool sunroof = false;
+};
+
+class Bicycle : protected Vehicle {
+public:
+    bool kickstand = true;
+};
+
+class Scooter : private Vehicle {
+public:
+    bool electric = false;
+};
+
+int main() 
+{
+    Car car;
+    car.wheels = 4;
+	// The following will produce errors and won't compile
+    //Bicycle bicycle;
+    //bicycle.wheels = 2;
+    //Scooter scooter;
+    //scooter.wheels = 1;
+};
+```
+
+### Composition
+
+[Composition](https://en.wikipedia.org/wiki/Composition_over_inheritance) is a closely related alternative to inheritance. Composition involves constructing ("composing") classes from other classes, instead of inheriting traits from a parent class.
+
+A common way to distinguish "composition" from "inheritance" is to think about what an object can do, rather than what it is. This is often expressed as [**"has a"**](https://en.wikipedia.org/wiki/Has-a) versus [**"is a"**](https://en.wikipedia.org/wiki/Is-a).
+
+From the standpoint of composition, a cat "has a" head and "has a" set of paws and "has a" tail.
+
+From the standpoint of inheritance, a cat "is a" mammal.
+
+There is [no hard and fast rule](https://www.google.com/search?q=when+to+use+composition+and+when+to+use+inheritance&oq=when+to+use+composition+and+when+to+use+inheritance) about when to prefer composition over inheritance. In general, if a class needs only extend a small amount of functionality beyond what is already offered by another class, it makes sense to **inherit** from that other class. However, if a class needs to contain functionality from a variety of otherwise unrelated classes, it makes sense to **compose** the class from those other classes.
+
+Example:
+
+```cpp
+#include <iostream>
+#include <cmath>
+#include <assert.h>
+
+// Define LineSegment struct
+struct LineSegment {
+// Define protected attribute length
+public:
+    double length;
+};
+
+// Define Circle class
+public:
+    Circle(LineSegment& radius);
+    double Area();
+
+private:
+    LineSegment& radius_;
+};
+
+// Declare Circle class
+Circle::Circle(LineSegment& radius) : radius_(radius) {}
+
+double Circle::Area() 
+{
+    return pow(Circle::radius_.length, 2) * M_PI;
+}
+
+// Test in main()
+int main() 
+{
+    LineSegment radius {3};
+    Circle circle(radius);
+    assert(int(circle.Area()) == 28);
+}
+```
+
+### Friends
+
+In C++, `friend` classes provide an alternative inheritance mechanism to derived classes. The main difference between classical inheritance and friend inheritance is that a `friend` class can access private members of the base class, which isn't the case for classical inheritance. In classical inheritance, a derived class can only access public and protected members of the base class.
+
+Example:
+```cpp
+#include <cassert>
+
+class Heart {
+private:
+	int rate{80};
+	friend class Human;
+};
+
+class Human {
+public:
+	Heart heart;
+	void Exercise() {heart.rate = 150;}
+	int HeartRate() {return heart.rate;}
+};
+
+int main() {
+	Human human;
+	assert(human.HeartRate() == 80);
+	human.Exercise();
+	assert(human.HeartRate() == 150);
+}
+```
+
+### Polymorphism Overloading
+
+[Polymorphism](https://www.merriam-webster.com/dictionary/polymorphism) is means "assuming many forms".
+
+In the context of object-oriented programming, [polymorphism](https://en.wikipedia.org/wiki/Polymorphism_(computer_science)) describes a paradigm in which a function may behave differently depending on how it is called. In particular, the function will perform differently based on its inputs.
+
+Polymorphism can be achieved in two ways in C++: overloading and [overriding](#polymorphism-overriding). In this exercise we will focus on overloading.
+
+In C++, you can write two (or more) versions of a function with the same name. This is called ["overloading"](https://en.wikipedia.org/wiki/Function_overloading). Overloading requires that we leave the function name the same, but we modify the function signature. For example, we might define the same function name with multiple different configurations of input arguments.
+
+Example:
+
+```cpp
+#include <cassert>
+#include <string>
+
+class Water {};
+class Alcohol {};
+class Coffee {};
+
+class Human{
+public:
+	std::string condition{"happy"};
+	void Drink(Water water){condition = "hydrated";}
+	void Drink(Alcohol alcohol){condition = "impaired";}
+	void Drink(Soda soda){condition = "cavities";}
+};
+
+int main() {
+	Human david;
+	assert(david.condition == "happy");
+	david.Drink(Water());
+	assert(david.condition == "hydrated");
+	david.Drink(Alcohol());
+	assert(david.condition == "impaired");
+	david.Drink(Soda());
+	assert(david.condition == "cavities");
+}
+```
+
+### Polymorphism Operator Overloading
+
+In this exercise you'll see how to achieve polymorphism with [operator overloading](https://en.cppreference.com/w/cpp/language/operators). You can choose any operator from the ASCII table and give it your own set of rules!
+
+Operator overloading can be useful for many things. Consider the `+` operator. We can use it to add `int`s, `double`s, `float`s, or even `std::string`s.
+
+Imagine vector addition. You might want to perform vector addition on a pair of points to add their x and y components. The compiler won't recognize this type of operation on its own, because this data is user defined. However, you can overload the `+` operator so it performs the action that you want to implement.
+
+Example:
+
+```cpp
+#include <assert.h>
+
+class Point {
+public:
+    Point(int x, int y) : x_(x), y_(y) {}
+    
+    Point operator+(const Point& p2)
+    {
+        return Point(x_ + p2.x_, y_ + p2.y_);
+    }
+    int x_;
+    int y_;
+};
+
+// Test in main()
+int main() {
+  Point p1(10, 5), p2(2, 4);
+  Point p3 = p1 + p2; // An example call to "operator +";
+  assert(p3.x_ == p1.x_ + p2.x_);
+  assert(p3.y_ == p1.y_ + p2.y_);
+}
+```
+
+### Polymorphism Overriding
+
+Overriding a function occurs when:
+1. A base class declares a [virtual function](#virtual-functions).
+2. A derived class overrides that virtual function by defining its own implementation with an identical function signature.
+
+See [example](#virtual_func_overriding_ex) in virtual functions section. 
+
+**`override` keyword**
+
+This specification tells both the compiler and the human programmer that the purpose of this function is to override a virtual function. The compiler will verify that a function specified as `override` does indeed override some other virtual function, or otherwise the compiler will generate an error.
+
+Specifying a function as `override` is [good practice](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rh-override), as it empowers the compiler to verify the code, and communicates the intention of the code to future users.
+
+For example:
+```cpp
+class Shape {
+public:
+  virtual double Area() const = 0;
+  virtual double Perimeter() const = 0;
+};
+
+class Circle : public Shape {
+public:
+  Circle(double radius) : radius_(radius) {}
+  double Area() const override { return pow(radius_, 2) * PI; } // specified as an override function
+  double Perimeter() const override { return 2  *radius_*  PI; } // specified as an override function
+
+private:
+  double radius_;
+};
+```
+
+
+**Function Hiding**
+
+Function hiding is [closely related, but distinct from](https://stackoverflow.com/questions/19736281/what-are-the-differences-between-overriding-virtual-functions-and-hiding-non-vir), overriding.
+
+A derived class hides a base class function, as opposed to overriding it, if the base class function is not specified to be `virtual`.
+
+```cpp
+class Cat {
+public:
+  std::string Talk() const { return std::string("Meow"); }
+};
+
+class Lion : public Cat {
+public:
+  std::string Talk() const { return std::string("Roar"); }
+};
+```
+
+In this example, `Cat` is the base class and `Lion` is the derived class. Both `Cat` and `Lion` have `Talk()` member functions.
+
+When an object of type `Lion` calls `Talk()`, the object will run `Lion::Talk()`, not `Cat::Talk()`.
+
+In this situation, `Lion::Talk()` is _hiding_ `Cat::Talk()`. If `Cat::Talk()` were `virtual`, then `Lion::Talk()` would _override_ `Cat::Talk()`, instead of _hiding_ it. _Overriding_ requires a `virtual` function in the base class.
+
+The distinction between _overriding_ and _hiding_ is subtle and not terribly significant, but in certain situations _hiding_ [can lead to bizarre errors](https://isocpp.org/wiki/faq/strange-inheritance), particularly when the two functions have slightly different function signatures.
+
+
+
+### Virtual Functions
+
+Virtual functions are a polymorphic feature. These functions are declared (and possibly defined) in a base class, and can be overridden by derived classes.
+
+This approach declares an [interface](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-glossary) at the base level, but delegates the implementation of the interface to the derived classes.
+
+In this exercise, `class Shape` is the base class. Geometrical shapes possess both an area and a perimeter. `Area()` and `Perimeter()` should be virtual functions of the base class interface. Append `= 0` to each of these functions in order to declare them to be "pure" virtual functions.
+
+A [pure virtual function](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-glossary) is a [virtual function](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-glossary) that the base class [declares](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-glossary) but does not [define](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-glossary).
+
+A pure virtual function has the side effect of making its class [abstract](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-glossary). This means that the class cannot be instantiated. Instead, only classes that derive from the abstract class and override the pure virtual function can be instantiated.
+
+<a name="virtual_func_overriding_ex"></a>Example:
+
+```cpp
+#include <assert.h>
+#include <cmath>
+
+class Shape
+{
+public:
+    virtual float Area() const = 0;
+    virtual float Perimeter() const = 0;
+};
+
+class Rectangle: public Shape
+{
+public:
+    Rectangle(float width, float height) : width_(width), height_(height) {}
+    float Area() const {return width_ * height_;}
+    float Perimeter() const{return width_ * 2.0f + height_ * 2.0f;}
+private:
+    float width_;
+    float height_;
+};
+
+class Circle : public Shape
+{
+public:
+    Circle(float radius) : radius_(radius) {}
+    float Area() const {return M_PI * radius_ * radius_;}
+    float Perimeter() const {return 2.0f * M_PI * radius_;}
+private:
+    float radius_;
+};
+
+// Test in main()
+int main() {
+  double epsilon = 0.1; // useful for floating point equality
+  // Test circle
+  Circle circle(12.31);
+  assert(abs(circle.Perimeter() - 77.35) < epsilon);
+  assert(abs(circle.Area() - 476.06) < epsilon);
+  // Test rectangle
+  Rectangle rectangle(10, 6);
+  assert(rectangle.Perimeter() == 32);
+  assert(rectangle.Area() == 60);
+}
+```
+
+### Multiple Inheritance
+
+The Core Guidelines have some worthwhile recommendations about how and when to use multiple inheritance:
+
+- ["Use multiple inheritance to represent multiple distinct interfaces"](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#c135-use-multiple-inheritance-to-represent-multiple-distinct-interfaces)
+- ["Use multiple inheritance to represent the union of implementation attributes"](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#c136-use-multiple-inheritance-to-represent-the-union-of-implementation-attributes)
+
+Example:
+```cpp
+#include <cassert>
+#include <iostream>
+
+class Car {
+public:
+	std::string Drive() {return "I'm driving!";}
+};
+
+class Boat {
+public:
+	std::string Drive() {return "I'm cruising!";}
+};
+
+class AmphibiousCar : public Boat, public Car {};
+
+int main() {
+	Car car;
+	Boat boat;
+	AmphibiousCar duck;
+	assert(duck.Drive() = car.Drive());
+	assert(duck.Cruise() == boat.Cruise());
+}
+```
+
+## Generic Programming (Templates)
+
+An example of generic programming is the vector class. You can create a vector of any type of object (string, int, custom user defined class, etc.).
+
+Templates enable generic programming by generalizing a function to apply to any class. Specifically, templates use _types_ as parameters so that the same implementation can operate on different data types.
+
+For example, you might need a function to accept many different data types. The function acts on those arguments, perhaps dividing them or sorting them or something else. Rather than writing and maintaining the multiple function declarations, each accepting slightly different arguments, you can write one function and pass the argument types as parameters. At compile time, the compiler then expands the code using the types that are passed as parameters.
+
+Example:
+
+```cpp
+template <typename Type> Type Sum(Type a, Type b) { return a + b; }
+
+int main() {
+	std::cout << Sum<double>(20.0, 13.7) << "\n";
+}
+```
+
+Because `Sum()` is defined with a template, when the program calls `Sum()` with `double`s as parameters, the function expands to become:
+```cpp
+double Sum(double a, double b) {
+    return a+b;
+}
+```
+
+Or in this case:
+
+```cpp
+std::cout << Sum<char>(‘Z’, ’j’) << "\n";
+```
+
+The program expands to become:
+```cpp
+char Sum(char a, char b) {
+    return a+b;
+}
+```
+
+We use the keyword `template` to specify which function is generic. Generic code is the term for code that is independent of types. It is mandatory to put the `template<>` tag before the function signature, to specify and mark that the declaration is generic.
+
+Besides `template`, the keyword `typename` (or, alternatively, `class`) specifies the generic type in the function prototype. The parameters that follow `typename` (or `class`) represent generic types in the function declaration.
+
+In order to instantiate a templatized class, use a templatized constructor, for example: `Sum<double>(20.0, 13.7)`. You might recognize this form as the same form used to construct a `vector`. That's because `vector`s are indeed a generic class!
+
+See [template_example.cpp](template_example.cpp) for more examples of how to use.
+
+### Template Deduction
+
+The compiler determines the type for a template automatically without us having to specify it.
+
+Example:
+
+```cpp
+template <typename T> 
+T Max(T a, T b) {
+    return a > b ? a : b;
+}
+
+// These are equivalent
+std::cout << Max(5.7, 1.436246) << std::endl;
+std::cout << Max<double>(5.7, 1.436246) << std::endl;
+```
+
+### Class Templates
+
+Classes are the building blocks of object oriented programming in C++. Templates support the creation of generic classes!
+
+Class templates can declare and implement generic attributes for use by generic methods. These templates can be very useful when building classes that will serve multiple purposes.
+
+Example:
+```cpp
+#include <assert.h>
+#include <string>
+#include <sstream>
+
+template <typename KeyType, typename ValueType>
+class Mapping {
+public:
+  Mapping(KeyType key, ValueType value) : key(key), value(value) {}
+  std::string Print() const {
+    std::ostringstream stream;
+    stream << key << ": " << value;
+    return stream.str();
+  }
+  KeyType key;
+  ValueType value;
+};
+
+// Test
+int main() {
+  Mapping<std::string, int> mapping("age", 20);
+  assert(mapping.Print() == "age: 20");
+}
+```
+
+
+
+
+
