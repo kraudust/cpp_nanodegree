@@ -19,6 +19,10 @@
 			1. [Inherited Access Specifiers](#inherited-access-specifiers)
 		2. [Composition](#composition)
 		3. [Friends](#friends)
+		4. [Polymorphism Overloading](#polymorphism-overloading)
+		5. [Polymorphism Operator Overloading](#polymorphism-operator-overloading)
+		6. [Polymorphism Overriding](#polymorphism-overriding)
+	14. [Virtual Functions](#virtual-functions)
 # Structures
 
 Allows developers to create their own types to aggregate data relevant to their needs.
@@ -663,6 +667,149 @@ int main() {
 }
 ```
 
-### Polymorphism
+### Polymorphism Overloading
+
+[Polymorphism](https://www.merriam-webster.com/dictionary/polymorphism) is means "assuming many forms".
+
+In the context of object-oriented programming, [polymorphism](https://en.wikipedia.org/wiki/Polymorphism_(computer_science)) describes a paradigm in which a function may behave differently depending on how it is called. In particular, the function will perform differently based on its inputs.
+
+Polymorphism can be achieved in two ways in C++: overloading and [overriding](#polymorphism-overriding). In this exercise we will focus on overloading.
+
+In C++, you can write two (or more) versions of a function with the same name. This is called ["overloading"](https://en.wikipedia.org/wiki/Function_overloading). Overloading requires that we leave the function name the same, but we modify the function signature. For example, we might define the same function name with multiple different configurations of input arguments.
+
+Example:
+
+```cpp
+#include <cassert>
+#include <string>
+
+class Water {};
+class Alcohol {};
+class Coffee {};
+
+class Human{
+public:
+	std::string condition{"happy"};
+	void Drink(Water water){condition = "hydrated";}
+	void Drink(Alcohol alcohol){condition = "impaired";}
+	void Drink(Soda soda){condition = "cavities";}
+};
+
+int main() {
+	Human david;
+	assert(david.condition == "happy");
+	david.Drink(Water());
+	assert(david.condition == "hydrated");
+	david.Drink(Alcohol());
+	assert(david.condition == "impaired");
+	david.Drink(Soda());
+	assert(david.condition == "cavities");
+}
+```
+
+### Polymorphism Operator Overloading
+
+In this exercise you'll see how to achieve polymorphism with [operator overloading](https://en.cppreference.com/w/cpp/language/operators). You can choose any operator from the ASCII table and give it your own set of rules!
+
+Operator overloading can be useful for many things. Consider the `+` operator. We can use it to add `int`s, `double`s, `float`s, or even `std::string`s.
+
+Imagine vector addition. You might want to perform vector addition on a pair of points to add their x and y components. The compiler won't recognize this type of operation on its own, because this data is user defined. However, you can overload the `+` operator so it performs the action that you want to implement.
+
+Example:
+
+```cpp
+#include <assert.h>
+
+class Point {
+public:
+    Point(int x, int y) : x_(x), y_(y) {}
+    
+    Point operator+(const Point& p2)
+    {
+        return Point(x_ + p2.x_, y_ + p2.y_);
+    }
+    int x_;
+    int y_;
+};
+
+// Test in main()
+int main() {
+  Point p1(10, 5), p2(2, 4);
+  Point p3 = p1 + p2; // An example call to "operator +";
+  assert(p3.x_ == p1.x_ + p2.x_);
+  assert(p3.y_ == p1.y_ + p2.y_);
+}
+```
+
+### Polymorphism Overriding
+
+Overriding a function occurs when:
+1. A base class declares a [virtual function](#virtual-functions).
+2. A derived class overrides that virtual function by defining its own implementation with an identical function signature.
+
+See [example](#virtual_func_overriding_ex) in virtual functions section. 
+
+## Virtual Functions
+
+Virtual functions are a polymorphic feature. These functions are declared (and possibly defined) in a base class, and can be overridden by derived classes.
+
+This approach declares an [interface](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-glossary) at the base level, but delegates the implementation of the interface to the derived classes.
+
+In this exercise, `class Shape` is the base class. Geometrical shapes possess both an area and a perimeter. `Area()` and `Perimeter()` should be virtual functions of the base class interface. Append `= 0` to each of these functions in order to declare them to be "pure" virtual functions.
+
+A [pure virtual function](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-glossary) is a [virtual function](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-glossary) that the base class [declares](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-glossary) but does not [define](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-glossary).
+
+A pure virtual function has the side effect of making its class [abstract](http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-glossary). This means that the class cannot be instantiated. Instead, only classes that derive from the abstract class and override the pure virtual function can be instantiated.
+
+<a name="virtual_func_overriding_ex"></a>Example:
+
+```cpp
+#include <assert.h>
+#include <cmath>
+
+class Shape
+{
+public:
+    virtual float Area() const = 0;
+    virtual float Perimeter() const = 0;
+};
+
+class Rectangle: public Shape
+{
+public:
+    Rectangle(float width, float height) : width_(width), height_(height) {}
+    float Area() const {return width_ * height_;}
+    float Perimeter() const{return width_ * 2.0f + height_ * 2.0f;}
+private:
+    float width_;
+    float height_;
+};
+
+class Circle : public Shape
+{
+public:
+    Circle(float radius) : radius_(radius) {}
+    float Area() const {return M_PI * radius_ * radius_;}
+    float Perimeter() const {return 2.0f * M_PI * radius_;}
+private:
+    float radius_;
+};
+
+// Test in main()
+int main() {
+  double epsilon = 0.1; // useful for floating point equality
+  // Test circle
+  Circle circle(12.31);
+  assert(abs(circle.Perimeter() - 77.35) < epsilon);
+  assert(abs(circle.Area() - 476.06) < epsilon);
+  // Test rectangle
+  Rectangle rectangle(10, 6);
+  assert(rectangle.Perimeter() == 32);
+  assert(rectangle.Area() == 60);
+}
+```
+
+
+
 
 
