@@ -7,7 +7,8 @@ template <typename T> T Product (T a, T b)
     return a * b;
 }
 
-template <typename T> T Max(T a, T b) {
+template <typename T> 
+T Max(T a, T b) {
     return a > b ? a : b;
 }
 

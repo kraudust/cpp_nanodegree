@@ -25,6 +25,9 @@
 		7. [Virtual Functions](#virtual-functions)
 		8. [Multiple Inheritance](#multiple-inheritance)
 3. [Generic Programming (Templates)](#generic-programming-templates)
+	1. [Template Deduction](#template-deduction)
+	2. [Class Templates](#class-templates)
+
 # Structures
 
 Allows developers to create their own types to aggregate data relevant to their needs.
@@ -943,6 +946,57 @@ Besides `template`, the keyword `typename` (or, alternatively, `class`) spec
 In order to instantiate a templatized class, use a templatized constructor, for example: `Sum<double>(20.0, 13.7)`. You might recognize this form as the same form used to construct a `vector`. That's because `vector`s are indeed a generic class!
 
 See [template_example.cpp](template_example.cpp) for more examples of how to use.
+
+### Template Deduction
+
+The compiler determines the type for a template automatically without us having to specify it.
+
+Example:
+
+```cpp
+template <typename T> 
+T Max(T a, T b) {
+    return a > b ? a : b;
+}
+
+// These are equivalent
+std::cout << Max(5.7, 1.436246) << std::endl;
+std::cout << Max<double>(5.7, 1.436246) << std::endl;
+```
+
+### Class Templates
+
+Classes are the building blocks of object oriented programming in C++. Templates support the creation of generic classes!
+
+Class templates can declare and implement generic attributes for use by generic methods. These templates can be very useful when building classes that will serve multiple purposes.
+
+Example:
+```cpp
+#include <assert.h>
+#include <string>
+#include <sstream>
+
+template <typename KeyType, typename ValueType>
+class Mapping {
+public:
+  Mapping(KeyType key, ValueType value) : key(key), value(value) {}
+  std::string Print() const {
+    std::ostringstream stream;
+    stream << key << ": " << value;
+    return stream.str();
+  }
+  KeyType key;
+  ValueType value;
+};
+
+// Test
+int main() {
+  Mapping<std::string, int> mapping("age", 20);
+  assert(mapping.Print() == "age: 20");
+}
+```
+
+
 
 
 
