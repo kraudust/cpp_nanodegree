@@ -7,3 +7,6 @@
 [submodule "cpp_foundations/open_streetmap_planner/thirdparty/googletest"]
 	path = cpp_foundations/open_streetmap_planner/thirdparty/googletest
 	url = git@github.com:google/googletest.git
+[submodule "object_oriented_programming/CppND-System-Monitor"]
+	path = object_oriented_programming/CppND-System-Monitor
+	url = git@github.com:kraudust/CppND-System-Monitor.git
