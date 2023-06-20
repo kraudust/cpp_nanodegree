@@ -24,7 +24,7 @@
 		6. [Polymorphism Overriding](#polymorphism-overriding)
 		7. [Virtual Functions](#virtual-functions)
 		8. [Multiple Inheritance](#multiple-inheritance)
-3. [Generic Programming (Templates)](#generic-programming-(templates))
+3. [Generic Programming (Templates)](#generic-programming-templates)
 # Structures
 
 Allows developers to create their own types to aggregate data relevant to their needs.
