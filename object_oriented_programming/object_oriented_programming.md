@@ -887,7 +887,7 @@ public:
 
 class Boat {
 public:
-	std::string Drive() {return "I'm cruising!";}
+	std::string Cruise() {return "I'm cruising!";}
 };
 
 class AmphibiousCar : public Boat, public Car {};
