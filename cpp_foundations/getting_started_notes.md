@@ -42,3 +42,4 @@ The instructions for this are the same for all machines:
 - Code > Preferences > Extensions
 	- In search bar type "C/C++"
 	- Select the C/C++ extension aqnd press the **Install** button to install this extension
+- [Debugging in VSCode](https://code.visualstudio.com/docs/cpp/cmake-linux)
