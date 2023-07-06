@@ -68,6 +68,39 @@ int main() {
     cout << "Everything worked!" << "\n";
 }
 ```
+
+When creating vectors of objects, you can just pass in the arguments you would pass to the constructor of the object when adding elements to the vector. For example:
+
+```cpp
+#include <iostream>
+
+#include <vector>
+
+class A {
+    public:
+        A(int x_arg): x(x_arg) {
+            std::cout << "A (x_arg)\n";
+        }
+    A() {
+        x = 0;
+        std::cout << "A ()\n";
+    }
+    private:
+        int x;
+};
+int main() {
+    std::vector < A > a;
+    std::cout << "call emplace_back:\n";
+    a.emplace_back(0); // Don't need to call A(0), can just pass in the arg
+}
+```
+
+#### Output
+```
+call emplace_back:
+A (x_arg)
+```
+
 ### enum
 ```cpp
 #include <iostream>
