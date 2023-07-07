@@ -83,6 +83,19 @@ The 7 says to print 7 units, the t stands for binary, the x stands for hex, the 
 There is also an [online gdb application](https://www.onlinegdb.com) you can use to debug code.
 
 ## Types of Computer Memory
+
+Below you will find a small list of some common memory types that you will surely have heard of:
+- RAM / ROM
+- Cache (L1, L2)
+- Registers
+- Virtual Memory
+- Hard Disks, USB drives
+
+Regrettably though, low latency and large memory are not compatible with each other (at least not at a reasonable price). In practice, the decision for low latency usually results in a reduction of the available storage capacity (and vice versa). This is the reason why a computer has multiple memory types that are arranged hierarchically. The following pyramid illustrates the principle, fast and low storage at top, and slow and more storage at bottom:
+![](images/pyramid-memory.png)
+
+Stuff that needs accessed often or soon should be closer to the top of the pyramid while stuff that isn't accessed often should be near the bottom.
+
 ## Cache Memory
 ## Virtual Memory
 
