@@ -7,8 +7,9 @@
 	5. [Virtual Memory](#Virtual-Memory)
 2. [Variables and Memory](#Variables-and-Memory)
 	1. [The Process Memory Model](#The-Process-Memory-Model)
-	2. [Automatic Memory Allocation The Stack](#Automatic-Memory-Allocation-The-Stack)
-	3. [Call By Value vs Call By Reference](#Call-By-Value-vs-Call-By-Reference)
+	2. [Memory Allocation in C++](#Memory-Allocation-in-C++)
+	3. [Automatic Memory Allocation The Stack](#Automatic-Memory-Allocation-The-Stack)
+	4. [Call By Value vs Call By Reference](#Call-By-Value-vs-Call-By-Reference)
 3. [Dynamic Memory Allocation The Heap](#Dynamic-Memory-Allocation-The-Heap)
 	1. [Heap Memory](#Heap-Memory)
 	2. [Using malloc and free](#Using-malloc-and-free)
@@ -182,7 +183,118 @@ Before we take a closer look at an example though, let us define two important t
 
 # Variables and Memory
 ## The Process Memory Model
+
+As we have seen in the previous lesson, each program is assigned its own virtual memory by the operating system. This address space is arranged in a linear fashion with one block of data being stored at each address. It is also divided into several distinct areas as illustrated by the figure below:
+![](images/c21-fig1.png)
+1. The **stack** is a contiguous memory block with a fixed maximum size. If a program exceeds this size, it will crash. The stack is used for storing automatically allocated variables such as local variables or function parameters. If there are multiple threads in a program, then each thread has its own stack memory. New memory on the stack is allocated when the path of execution enters a scope and freed again once the scope is left. It is important to know that the stack is managed "automatically" by the compiler, which means we do not have to concern ourselves with allocation and deallocation.
+2. The **heap** (also called "free store" in C++) is where data with dynamic storage lives. It is shared among multiple threads in a program, which means that memory management for the heap needs to take concurrency into account. This makes memory allocations in the heap more complicated than stack allocations. In general, managing memory on the heap is more (computationally) expensive for the operating system, which makes it slower than stack memory. Contrary to the stack, the heap is not managed automatically by the system, but by the programmer. If memory is allocated on the heap, it is the programmer’s responsibility to free it again when it is no longer needed. If the programmer manages the heap poorly or not at all, there will be trouble.
+3. The **BSS** (Block Started by Symbol) segment is used in many compilers and linkers for a segment that contains global and static variables that are initialized with zero values. This memory area is suitable, for example, for arrays that are not initialized with predefined values.
+4. The **Data** segment serves the same purpose as the BSS segment with the major difference being that variables in the Data segment have been initialized with a value other than zero. Memory for variables in the Data segment (and in BSS) is allocated once when a program is run and persists throughout its lifetime.
+
+## Memory Allocation in C++
+
+Now that we have an understanding of the available process memory, let us take a look at memory allocation in C++.
+
+Not every variable in a program has a permanently assigned area of memory. The term **allocate** refers to the process of assigning an area of memory to a variable to store its value. A variable is **deallocated** when the system reclaims the memory from the variable, so it no longer has an area to store its value.
+
+Generally, three basic types of memory allocation are supported:
+
+1. **Static memory allocation** is performed for static and global variables, which are stored in the BSS and Data segment. Memory for these types of variables is allocated once when your program is run and persists throughout the life of your program.
+2. **Automatic memory allocation** is performed for function parameters as well as local variables, which are stored on the stack. Memory for these types of variables is allocated when the path of execution enters a scope and freed again once the scope is left.
+3. **Dynamic memory allocation** is a possibility for programs to request memory from the operating system at runtime when needed. This is the major difference between automatic and static allocation, where the size of the variable must be known at compile time. Dynamic memory allocation is not performed on the limited stack but on the heap and is thus (almost) only limited by the size of the address space.
+
+From a programmer’s perspective, stack and heap are the most important areas of program memory. Hence, in the following lessons, let us look at these two in turn.
+
 ## Automatic Memory Allocation The Stack
+
+As mentioned in the last section, the stack is the place in virtual memory where the local variables reside, including arguments to functions. Each time a function is called, the stack grows (from top to bottom) and each time a function returns, the stack contracts. When using multiple threads (as in concurrent programming), it is important to know that each thread has its own stack memory - which can be considered thread-safe.
+
+In the following, a short list of key properties of the stack is listed:
+
+1. The stack is a **contiguous block of memory**. It will not become fragmented (as opposed to the heap) and it has a fixed maximum size.
+    
+2. When the **maximum size of the stack** memory is exceeded, a program will crash.
+    
+3. Allocating and deallocating **memory is fast** on the stack. It only involves moving the stack pointer to a new position.
+
+The following diagram shows the stack memory during a function call:
+![](images/c22-fig1.png)
+In the example, the variable `x` is created on the stack within the scope of main. Then, a stack frame which represents the function `Add` and its variables is pushed to the stack, moving the stack pointer further downwards. It can be seen that this includes the local variables `a` and `b`, as well as the return address, a base pointer and finally the return value `s`.
+
+The following shows how the stack can grow and contract:
+```cpp
+#include <stdio.h>
+
+void MyFunc()
+{
+    int k = 3; 
+    printf ("3: %p \n",&k);
+}
+
+int main()
+{
+    int i = 1; 
+    printf ("1: %p \n",&i);
+
+    int j = 2; 
+    printf ("2: %p \n",&j);
+
+    MyFunc();
+
+    int l = 4; 
+    printf ("4: %p \n",&l);
+
+    return 0; 
+}
+```
+
+Within the main function, we see two declarations of local variables `i` and `j` followed by a call to `MyFunc`, where another local variable is allocated. After `MyFunc` returns, another local variable is allocated in `main`. The program generates the following output:
+
+`1: 0x7ffeefbff688`  
+`2: 0x7ffeefbff684`
+`3: 0x7ffeefbff65c`
+`4: 0x7ffeefbff680` 
+
+Between 1 and 2, the stack address is reduced by 4 bytes, which corresponds to the allocation of memory for the int `j`.
+
+Between 2 and 3, the address pointer is moved by 0x28. We can easily see that calling a function causes a significant amount of memory to be allocated. In addition to the local variable of `MyFunc`, the compiler needs to store additional data such as the return address.
+
+Between 3 and 4, `MyFunc` has returned and a third local variable `k` has been allocated on the stack. The stack pointer now has moved back to a location which is 4 bytes relative to position 2. This means that after returning from `MyFunc`, the stack has contracted to the size it had before the function call.
+
+When a thread is created, stack memory is allocated by the operating system as a contiguous block. With each new function call or local variable allocation, the stack pointer is moved until eventually it will reach the bottom of said memory block. Once it exceeds this limit (which is called "stack overflow"), the program will crash. We will try to find out the limit of your computer’s stack memory in the following exercise.
+
+```cpp
+#include <iostream>
+
+int calls = 0;
+
+void myFunc(int& y)
+{
+    calls++;
+    int x = 3;
+    std::cout << calls << ": stack bottom : " << &y << ", current : " << &x << std::endl;
+    myFunc(y);
+}
+
+int main()
+{
+    int y = 10;
+    myFunc(y);
+    return 0;
+}
+```
+
+`ulimit -s` prints the stack size `8192` for my linux machine. The program above prints:
+
+```
+171157: stack bottom : 0x7f2071c4ee14, current : 0x7f2071479234
+171158: stack bottom : 0x7f2071c4ee14, current : 0x7f2071479204
+171159: stack bottom : 0x7f2071c4ee14, current : 0x7f20714791d4
+Segmentation fault
+```
+
+The difference between the current stack position and the stack bottom right before the segmentation fault should match the stack size for the machine indicating a stack overflow.
+
 ## Call By Value vs Call By Reference
 
 # Dynamic Memory Allocation The Heap
