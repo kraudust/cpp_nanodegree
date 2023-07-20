@@ -297,9 +297,323 @@ The difference between the current stack position and the stack bottom right bef
 
 ## Call By Value vs Call By Reference
 
+Pass by value example below. the value printed is 2 instead of 4 since AddTwo doesn't affect the variable passed in by value.
+```cpp
+#include <iostream>
+
+void AddTwo(int val)
+{
+    val += 2;
+}
+
+int main()
+{
+    int val = 0;
+    AddTwo(val);
+    val += 2;
+
+    std::cout << "val = " << val << std::endl;
+ 
+    return 0;
+}
+```
+ You can get around this by passing in a pointer to the variable. This still passes by value, in that it makes a local copy of the memory address that can be used to modify the variable at the address like below. The val printed is 5.
+```cpp
+#include <iostream>
+
+void AddThree(int *val)
+{
+    *val += 3;
+}
+
+int main()
+{
+    int val = 0;
+    AddThree(&val);
+    val += 2;
+
+    std::cout << "val = " << val << std::endl;
+ 
+    return 0;
+}
+```
+The 2nd major way to pass variables is by reference. This is faster and more memory efficient than passing a pointer as no information needs to be copied. Example below where val returned is 6.
+```cpp
+#include <iostream>
+
+void AddFour(int &val)
+{
+    val += 4;
+}
+
+int main()
+{
+    int val = 0;
+    AddFour(val);
+    val += 2;
+
+    std::cout << "val = " << val << std::endl;
+ 
+    return 0;
+}
+```
+
+Passing by reference also makes it easy to modify several variables. If you wanted to use the function return value for such a purpose, returning several variables can be cumbersome. For example the following prints a val = 7 and success = 1
+
+```cpp
+#include <iostream>
+
+void AddFive(int& value, bool& succeeded)
+{
+    value += 5;
+    succeeded = true;
+}
+
+int main()
+{
+    int val = 0;
+    bool success = false;
+    AddFive(val, success);
+    val += 2;
+
+    std::cout << "val = " << val << ", success = " << success << std::endl;
+ 
+    return 0;
+}
+```
+
+When passing pointers vs. references, consider the following:
+- Pointers can be declared without initialization. This means we can pass an uninitialized pointer to a function who then internally performs the initialization for us.
+    
+- Pointers can be reassigned to another memory block on the heap.
+    
+- References are usually easier to use (depending on the expertise level of the programmer). Sometimes however, if a third-party function is used without properly looking at the parameter definition, it might go unnoticed that a value has been modified.
+
+Closer examination at stack memory usage with 3 strategies (call by value, call by pointer, call by reference):
+```cpp
+#include <stdio.h>
+    
+void CallByValue(int i)
+{
+    int j = 1; 
+    printf ("call-by-value: %p\n",&j);
+}
+
+void CallByPointer(int *i)
+{
+    int j = 1; 
+    printf ("call-by-pointer: %p\n",&j);
+}
+
+void CallByReference(int &i)
+{
+    int j = 1; 
+    printf ("call-by-reference: %p\n",&j);
+}
+
+int main()
+{
+    int i = 0;
+    printf ("stack bottom: %p\n",&i);
+    
+    CallByValue(i);
+
+    CallByPointer(&i);
+
+    CallByReference(i);
+
+    return 0;
+}
+```
+
+This outputs:
+```
+stack bottom:      0x7ffeefbff698
+call-by-value:     0x7ffeefbff678
+call-by-pointer:   0x7ffeefbff674
+call-by-reference: 0x7ffeefbff674
+```
+
+1. `CallByValue` requires 32 bytes of memory. As discussed before, this is reserved for e.g. the function return address and for the local variables within the function (including the copy of `i`).
+    
+2. `CallByPointer` on the other hand requires - perhaps surprisingly - 36 bytes of memory. Let us complete the examination before going into more details on this result.
+    
+3. `CallByReference` finally has the same memory requirements as `CallByPointer`
+
+In this section, we have argued at length that passing a parameter by reference avoids a costly copy and should - in many situations - be preferred over passing a parameter by value. Yet, in the experiment above, we have witnessed the exact opposite.
+
+Let us take a look at the size of the various parameter types using the `sizeof` command:
+
+`printf("size of int: %lu\n", sizeof(int)); printf("size of *int: %lu\n", sizeof(int *));`
+
+The output here is
+
+`size of int: 4 size of *int: 8`
+
+Obviously, the size of the pointer variable is larger than the actual data type. As my machine has a 64 bit architecture, an address requires 8 byte.
+
+As an experiment, you could use the `-m32` compiler flag to build a 32 bit version of the program. This yields the following output:
+
+`size of int: 4 size of *int: 4`
+
+In order to benefit from call-by-reference, the size of the data type passed to the function has to surpass the size of the pointer on the respective architecture (i.e. 32 bit or 64 bit).
+
 # Dynamic Memory Allocation The Heap
 ## Heap Memory
+
+Heap memory, also know as dynamic memory , is an important resource available to programs (and programmers) to store data.
+
+![](images/c21-fig1.png)
+
+As mentioned earlier, the heap memory grows upwards while the stack grows in the opposite direction. We have seen in the last lesson that the automatic stack memory shrinks and grows with each function call and local variable. As soon as the scope of a variable is left, it is automatically deallocated and the stack pointer is shifted upwards accordingly.
+
+Heap memory is different in many ways: The programmer can request the allocation of memory by issuing a command such as `malloc` or `new` (more on that shortly). This block of memory will remain allocated until the programmer explicitly issues a command such as `free` or `delete`. The huge advantage of heap memory is the high degree of control a programmer can exert, albeit at the price of greater responsibility since memory on the heap must be actively managed.
+
+Let us take a look at some properties of heap memory:
+
+1. As opposed to local variables on the stack, memory can now be allocated in an arbitrary scope (e.g. inside a function) without it being deleted when the scope is left. Thus, as long as the address to an allocated block of memory is returned by a function, the caller can freely use it.
+    
+2. Local variables on the stack are allocated at compile-time. Thus, the size of e.g. a string variable might not be appropriate as the length of the string will not be known until the program is executed and the user inputs it. With local variables, a solution would be to allocate a long-enough array of and hope that the actual length does not exceed the buffer size. With dynamically allocated heap memory, variables are allocated at run-time. This means that the size of the above-mentioned string variable can be tailored to the actual length of the user input.
+    
+3. Heap memory is only constrained by the size of the address space and by the available memory. With modern 64 bit operating systems and large RAM memory and hard disks the programmer commands a vast amount of memory. However, if the programmer forgets to deallocate a block of heap memory, it will remain unused until the program is terminated. This is called a "memory leak".
+    
+4. Unlike the stack, the heap is shared among multiple threads, which means that memory management for the heap needs to take concurrency into account as several threads might compete for the same memory resource.
+    
+5. When memory is allocated or deallocated on the stack, the stack pointer is simply shifted upwards or downwards. Due to the sequential structure of stack memory management, stack memory can be managed (by the operating system) easily and securely. With heap memory, allocation and deallocation can occur arbitrarily, depending on the lifetime of the variables. This can result in fragmented memory over time, which is much more difficult and expensive to manage.
+
+**Memory Fragmentation**
+
+Let us construct a theoretic example of how memory on the heap can become fragmented: Suppose we are interleaving the allocation of two data types `X` and `Y` in the following fashion: First, we allocate a block of memory for a variable of type `X`, then another block for `Y` and so on in a repeated manner until some upper bound is reached. At the end of this operation, the heap might look like the following:
+![](images/c31-fig2.png)
+At some point, we might then decide to deallocate all variables of type `Y`, leading to empty spaces in between the remaining variables of type `X`. In between two blocks of type "X", no memory for an additional "X" could now be squeezed in this example.
+![](images/c31-fig3.png)
+A classic symptom of memory fragmentation is that you try to allocate a large block and you can’t, even though you appear to have enough memory free. On systems with virtual memory however, this is less of a problem, because large allocations only need to be contiguous in virtual address space, not in physical address space.
+
+When memory is heavily fragmented however, memory allocations will likely take longer because the memory allocator has to do more work to find a suitable space for the new object.
+
+At compile time, only the space for the pointer is reserved (on the stack). When the pointer is initialized, a block of memory of `sizeof(int)` bytes is allocated (on the heap) at program runtime. The pointer on the stack then points to this memory location on the heap.
+
 ## Using malloc and free
+
+So far we only considered primitive data types, whose storage space requirement was already fixed at compile time and could be scheduled with the building of the program executable. However, it is not always possible to plan the memory requirements exactly in advance, and it is inefficient to reserve the maximum memory space each time just to be on the safe side. C and C++ offer the option to reserve memory areas during the program execution, i.e. at runtime. It is important that the reserved memory areas are released again at the "appropriate point" to avoid memory leaks. It is one of the major challenges in memory management to always locate this "appropriate point" though.
+
+To allocate dynamic memory on the heap means to make a contiguous memory area accessible to the program at runtime and to mark this memory as occupied so that no one else can write there by mistake.
+
+To reserve memory on the heap, one of the two functions `malloc` (stands for _Memory Allocation_) or `calloc` (stands for _Cleared Memory Allocation_) is used. The header file `stdlib.h` or `malloc.h` must be included to use the functions.
+
+Here is the syntax of `malloc` and `calloc` in C/C++:
+
+`pointer_name = (cast-type*) malloc(size); pointer_name = (cast-type*) calloc(num_elems, size_elem);`
+
+`malloc` is used to dynamically allocate a single large block of memory with the specified size. It returns a pointer of type `void` which can be cast into a pointer of any form.
+
+`calloc` is used to dynamically allocate the specified number of blocks of memory of the specified type. It initializes each block with a default value '0'.
+
+Both functions return a pointer of type `void` which can be cast into a pointer of any form. If the space for the allocation is insufficient, a NULL pointer is returned.
+
+The problem with `void` pointers is that there is no way of knowing the offset to the end of the allocated memory block. For an int, this would be 4 bytes but for a double, the offset would be 8 bytes. So in order to retrieve the entire block of memory that has been reserved, we need to know the data type and the way to achieve this with `malloc` is by casting the return pointer.
+
+Since arrays and pointers are displayed and processed identically internally, individual blocks of data can also be accessed using array syntax:
+
+```cpp
+#include <stdio.h> 
+#include <stdlib.h> 
+  
+int main() 
+{
+    // reserve memory for 1 integer
+    int* p = static_cast<int*>(malloc(sizeof(int)));
+    // prints 'address=0x602010, value=0'
+    printf("address=%p, value=%d\n", p, *p);
+    
+    // reserve memory for 3 integers
+    int *p2 = (int*)malloc(3*sizeof(int));
+    p2[0] = 1; p2[1] = 2; p2[2] = 3;
+    // prints 'address=0x602440, second_value=2'
+    printf("address=%p, second value=%d\n", p2, p2[1]);
+    
+    struct MyStruct
+    {
+        int i;
+        double d;
+        char a[5];
+    };
+
+    MyStruct* p3 = static_cast<MyStruct*>(calloc(4,sizeof(MyStruct)));
+    p3[0].i = 1; p3[0].d = 3.14159; p3[0].a[0] = 'a';
+    // prints 'address=0x602460, second_value=3.14159'
+    printf("address=%p, second value=%f\n", p3, p3[0].d);
+    return 0; 
+}
+```
+
+The size of the memory area reserved with `malloc` or `calloc` can be increased or decreased with the `realloc` function.
+
+`pointer_name = (cast-type*) realloc( (cast-type*)old_memblock, new_size );`
+
+To do this, the function must be given a pointer to the previous memory area and the new size in bytes. Depending on the compiler, the reserved memory area is either (a) expanded or reduced internally (if there is still enough free heap after the previously reserved memory area) or (b) a new memory area is reserved in the desired size and the old memory area is released afterwards.
+
+The data from the old memory area is retained, i.e. if the new memory area is larger, the data will be available within new memory area as well. If the new memory area is smaller, the data from the old area will be available only up until the site of the new area - the rest is lost.
+
+In the example on the right, a block of memory of initially 8 bytes (two integers) is resized to 16 bytes (four integers) using `realloc`.
+
+Note that realloc has been used to increase the memory size and then decrease it immediately after assigning the values 3 and 4 to the new blocks. The output looks like the following:
+
+```
+address=0x100300060, value=1
+address=0x100300064, value=2
+address=0x100300068, value=3
+address=0x10030006c, value=4
+```
+
+Interestingly, the pointers `p+2` and `p+3` can still access the memory location they point to. Also, the original data (numbers 3 and 4) is still there. So `realloc` will not erase memory but merely mark it as "available" for future allocations. It should be noted however that accessing a memory location _after_ such an operation must be avoided as it could cause a segmentation fault. We will encounter segmentation faults soon when we discuss "dangling pointers" in one of the next lessons.
+
+If memory has been reserved, it should also be released as soon as it is no longer needed. If memory is reserved regularly without releasing it again, the memory capacity may be exhausted at some point. If the RAM memory is completely used up, the data is swapped out to the hard disk, which slows down the computer significantly.
+
+The `free` function releases the reserved memory area so that it can be used again or made available to other programs. To do this, the pointer pointing to the memory area to be freed is specified as a parameter for the function. In the `free_example.cpp`, a memory area is reserved and immediately released again.
+
+```cpp
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    void *p = malloc(100); 
+    free(p);
+
+    return 0;
+}
+```
+
+1. `free` can only free memory that was reserved with `malloc` or `calloc`.
+    
+2. `free` can only release memory that has not been released before. Releasing the same block of memory twice will result in an error.
+3. Memory allocated with `malloc` or `calloc` is not subject to the familiar rules of variables in their respective scopes. This means that they exist independently of block limits until they are released again or the program is terminated. However, the pointers which refer to such heap-allocated memory are created on the stack and thus only exist within a limited scope. As soon as the scope is left, the pointer variable will be lost - but not the heap memory it refers to.
+
+Common issue examples:
+```cpp
+#include <stdio.h> 
+#include <stdlib.h> 
+
+int main()
+{
+    // Generates a memory leak
+    int *m = (int*)malloc(sizeof(int)); 
+    m = NULL; 
+
+    // Uses a dangling pointer
+    int *n = (int*)malloc(sizeof(int)); 
+    free(n);
+    *n = 23;
+
+    // Uses an uninitialized pointer
+    char *o;
+    *o = 'a'; 
+
+    return 0;
+}
+```
+
 ## Using new and delete
 ## Typical Memory Management Problems
 
