@@ -867,6 +867,120 @@ Now that we have seen how to overload the new and delete operators, let us summa
 
 ## Typical Memory Management Problems
 
+1. **Memory Leaks** Memory leaks occur when data is allocated on the heap at runtime, but not properly deallocated. A program that forgets to clear a memory block is said to have a memory leak - this may be a serious problem or not, depending on the circumstances and on the nature of the program. For a program that runs, computes something, and quits immediately, memory leaks are usually not a big concern. Memory leaks are mostly problematic for programs that run for a long time and/or use large data structures. In such a case, memory leaks can gradually fill the heap until allocation requests can no longer be properly met and the program stops responding or crashes completely. We will look at an example further down in this section.
+    
+2. **Buffer Overruns** Buffer overruns occur when memory outside the allocated limits is overwritten and thus corrupted. One of the resulting problems is that this effect may not become immediately visible. When a problem finally does occur, cause and effect are often hard to discern. It is also sometimes possible to inject malicious code into programs in this way, but this shall not be discussed here. In this example, the allocated stack memory is too small to hold the entire string, which results in a segmentation fault:
+```cpp
+char str[5];
+strcpy(str,"BufferOverrun");
+printf("%s",str);
+```
+3. **Uninitialized Memory** Depending on the C++ compiler, data structures are sometimes initialized (most often to zero) and sometimes not. So when allocating memory on the heap without proper initialization, it might sometimes contain garbage that can cause problems.
+```cpp
+int a;
+int b=a*42;
+printf("%d",b);
+```
+4. **Incorrect pairing of allocation and deallocation** Freeing a block of memory more than once will cause a program to crash. This can happen when a block of memory is freed that has never been allocated or has been freed before. Such behavior could also occur when improper pairings of allocation and deallocation are used such as using `malloc()` with `delete` or `new` with `free()`.
+
+In this first example, the wrong `new` and `delete` are paired
+```cpp
+double *pDbl=new double[5];
+delete pDbl;
+```
+In this second example, the pairing is correct but a double deletion is performed:
+```cpp
+char *pChr=new char[5];
+delete[] pChr;
+delete[] pChr;
+```
+5. **Invalid memory access** This error occurs then trying to access a block of heap memory that has not yet or has already been deallocated.
+
+In this example, the heap memory has already been deallocated at the time when `strcpy()` tries to access it:
+```cpp
+char *pStr=new char[25];
+delete[] pStr;
+strcpy(pStr, "Invalid Access");
+```
+
+### Debugging memory leaks with Valgrind
+
+See [here](https://youtu.be/y0m_6V8fvzA) for an example with 2nd video [here](https://youtu.be/K2PQTpldoIw).
+
+In this section, we will look at _Valgrind_, a free software for Linux and Mac that is able to automatically detect memory. Windows programers can for example use the Visual Studio debugger and C Run-time Library (CRT) to detect and identify memory leaks. More information on how to do this can be found here: [Find memory leaks with the CRT Library - Visual Studio | Microsoft Docs](https://docs.microsoft.com/en-us/visualstudio/debugger/finding-memory-leaks-using-the-crt-library?view=vs-2019)
+
+With recent versions of MacOS, occasional difficulties have been reported with installing Valgrind. A working version for MacOS Mojave can be downloaded from GitHub via Homebrew: [GitHub - sowson/valgrind: Experimental Version of Valgrind for macOS 10.14.6 Mojave](https://github.com/sowson/valgrind)
+
+Valgrind is a framework that facilitates the development of tools for the dynamic analysis of programs. Dynamic analysis examines the behavior of a program at runtime, in contrast to static analysis, which often checks programs for various criteria or potential errors at the source code level before, during, or after translation. More information on Valgrind can be found here: [Valgrind: About](http://valgrind.org/info/)
+
+The Memcheck tool within Valgrind can be used to detect typical errors in programs written in C or C++ that occur in connection with memory management. It is probably the best-known tool in the Valgrind suite, and the name Valgrind is often used as a synonym for Memcheck.
+
+The following code generates a memory leak as the integer array has been allocated on the heap but the deallocation has been forgotten by the programmer:
+
+```cpp
+int main()
+{
+    int *pInt = new int[10];
+    return 0; 
+}
+```
+
+The array of integers on the heap to which `pInt` is pointing has a size of `10 * sizeof(int)`, which is 40 bytes. Let us now use Valgrind to search for this leak.
+
+After compiling the `memory_leaks_debugging.cpp` code file on the right to `a.out`, the terminal can be used to start Valgrind with the following command:
+
+`valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=/home/workspace/valgrind-out.txt /home/workspace/a.out`
+
+Let us look at the call parameters one by one:
+
+- **--leak-check** : Controls the search for memory leaks when the client program finishes. If set to `summary`, it says how many leaks occurred. If set to `full`, each individual leak will be shown in detail.
+- **--show-leak-kinds** : controls the set of leak kinds to show when —leak-check=full is specified. Options are `definite`, `indirect`, `possible` `reachable`, `all` and `none`
+- **--track-origins** : can be used to see where uninitialised values come from.
+    
+You can read the file into the terminal with:
+`cat valgrind-out.txt`
+
+This displays:
+```
+workspace root$ cat valgrind-out.txt
+==1416== Memcheck, a memory error detector
+==1416== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
+==1416== Using Valgrind-3.11.0 and LibVEX; rerun with -h for copyright info
+==1416== Command: /home/workspace/a.out
+==1416== Parent PID: 1249
+==1416== 
+==1416== 
+==1416== HEAP SUMMARY:
+==1416==     in use at exit: 72,744 bytes in 2 blocks
+==1416==   total heap usage: 2 allocs, 0 frees, 72,744 bytes allocated
+==1416== 
+==1416== 40 bytes in 1 blocks are definitely lost in loss record 1 of 2
+==1416==    at 0x4C2E80F: operator new[](unsigned long) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==1416==    by 0x4005B8: main (in /workspace/home/a.out)
+==1416== 
+==1416== 72,704 bytes in 1 blocks are still reachable in loss record 2 of 2
+==1416==    at 0x4C2DB8F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==1416==    by 0x4EDC365: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.28)
+==1416==    by 0x40106F9: call_init.part.0 (dl-init.c:72)
+==1416==    by 0x401080A: call_init (dl-init.c:30)
+==1416==    by 0x401080A: _dl_init (dl-init.c:120)
+==1416==    by 0x4000C69: ??? (in /lib/x86_64-linux-gnu/ld-2.23.so)
+==1416== 
+==1416== LEAK SUMMARY:
+==1416==    definitely lost: 40 bytes in 1 blocks
+==1416==    indirectly lost: 0 bytes in 0 blocks
+==1416==      possibly lost: 0 bytes in 0 blocks
+==1416==    still reachable: 72,704 bytes in 1 blocks
+==1416==         suppressed: 0 bytes in 0 blocks
+==1416== 
+==1416== For counts of detected and suppressed errors, rerun with: -v
+==1416== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
+```
+
+Bjarn mentioned the following:
+
+RAII, which stands for [**R**esource **A**cquisition **I**s **I**nitialization](https://en.cppreference.com/w/cpp/language/raii) is something you will learn about in a later part of the course.
+
 # Resource Copying Policies
 ## Copy Semantics
 ## Lvalues and rvalues
