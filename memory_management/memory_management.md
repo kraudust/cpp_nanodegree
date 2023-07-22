@@ -1451,7 +1451,7 @@ Here are some good resources to learn more about Lvalues and Rvalues:
 
 ## Move Semantics
 
-Let us consider the function on the right which takes an rvalue reference as its parameter.
+Let us consider the function below which takes an rvalue reference as its parameter.
 
 The important message of the function argument of `myFunction` to the programmer is : The object that binds to the rvalue reference `&&val` is yours, it is not needed anymore within the scope of the caller (which is `main`). As discussed in the previous section on rvalue references, this is interesting from two perspectives:
 
