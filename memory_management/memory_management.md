@@ -1904,6 +1904,159 @@ By using std::move, we were able to pass the ownership of the resources within 
 
 ### More move semantic use examples
 
+```cpp
+/* 
+Memory Management exercises part 1: Pass data between functions without using move semantics
+*/
+
+#include <iostream>
+#include <vector>
+#include <cmath>
+
+using namespace std;
+
+// pass back by pointer (old C++)
+const int array_size = 1e6; // determines size of the random number array
+vector<int>* RandomNumbers1()
+{
+    vector<int>* random_numbers = new vector<int>[array_size]; // allocate memory on the heap...
+  	std::cout << random_numbers << std::endl;
+    for (int i = 0; i < array_size; i++)
+    {
+        int b = rand();
+        (*random_numbers).push_back(b); // ...and fill it with random numbers
+    }
+    return random_numbers; // return pointer to heap memory
+}
+
+// pass back by reference (old C++)
+void RandomNumbers2(vector<int> &random_numbers)
+{
+    random_numbers.resize(array_size); // expand vector to desired size
+    for (int i = 0; i < array_size; i++)
+    {
+        random_numbers[i] = rand();
+    }
+}
+
+int main()
+{
+    /* EXERCISE 1-1: Get access to random data using a returned pointer from function RandomNumbers1 and make sure that there are no memory leaks.*/
+    // store the data in a suitable variable named 'random_numbers_1' and free the associated memory immediately afterwards
+
+    // SOLUTION to exercise 1-1
+    vector<int> *random_numbers_1 = RandomNumbers1(); // return-by-pointer
+  
+    /* EXERCISE 1-2: Get access to data using pass-by-reference */
+    // store the data in a suitable variable named 'random_numbers_2'
+
+    // SOLUTION to exercise 1-2
+    vector<int> random_numbers_2; // create identifier to pass to the function
+    RandomNumbers2(random_numbers_2);
+}
+```
+
+```cpp
+/* 
+Memory Management exercises part 2: Use move semantics implicitly as part of the STL
+*/
+
+#include <iostream>
+#include <vector>
+#include <cmath>
+
+using namespace std;
+
+const int array_size = 1e6;
+vector<int> RandomNumbers3()
+{
+    vector<int> random_numbers;
+    random_numbers.resize(array_size);
+    for (int i = 0; i < array_size; i++)
+    {
+        random_numbers[i] = rand();
+    }
+    return random_numbers; // return-by-value of the STL vector
+}
+
+int main()
+{
+    /* EXERCISE 2-1: Return large objects using move semantics in the STL */
+    // store the data in a suitable variable named 'random_numbers_3'
+
+    // SOLUTION to exercise 2-1
+    vector<int> random_numbers_3 = RandomNumbers3(); // will not copy the vector but use move semantics "under the hood"
+                                                     // Note that all of the STL classes (including vector) have been extended to support move semantics
+}
+```
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+// This class for managing a template-based heap ressource implements move semantics
+template <class T>
+class MyClass
+{
+    T* data = nullptr;
+
+public:
+    MyClass() {}
+
+    // move constructor
+    MyClass(MyClass &&other)
+    {
+        data = other.data;
+        other.data = nullptr;
+    }
+
+    // move assignment operator
+    MyClass &operator=(MyClass &&other)
+    {
+        if (this != &other)
+        {
+            if (data)
+            {
+                delete data;
+            }
+            data = other.data;
+            other.data = nullptr;
+        }
+
+        return *this;
+    }
+
+  	~MyClass()
+    {
+        if (data)
+        {
+            delete data;
+        }
+    }
+private:
+    // copy constructor
+    MyClass(const MyClass &);
+
+    // copy assignment operator
+    MyClass &operator=(const MyClass &);
+};
+
+int main()
+{
+    /* EXERCISE 3-1: create an instance h1 of class MyClass with data of type 'double' using the regular constructor */
+    // SOLUTION 3-1
+    MyClass<double> h1; // regular constructor
+
+    // /* EXERCISE 3-2: create an instance h2 of class MyClass using the move constructor (moving from h1) */
+    // // SOLUTION 3-2
+    MyClass<double> h3 = move(h1); // move constructor (rvalue as input)
+
+    /* EXERCISE 3-3: disable copying for class MyClass */
+    // SOLUTION 3-3
+    // set visibility of MyClass(const MyClass &) and of MyClass &operator=(const MyClass &) to private
+}
+```
 
 # Smart Pointers
 ## Resource Acquisition Is Initialization RAII
