@@ -10,3 +10,6 @@
 [submodule "object_oriented_programming/CppND-System-Monitor"]
 	path = object_oriented_programming/CppND-System-Monitor
 	url = git@github.com:kraudust/CppND-System-Monitor.git
+[submodule "memory_management/CppND-Memory-Management-Chatbot"]
+	path = memory_management/CppND-Memory-Management-Chatbot
+	url = git@github.com:kraudust/CppND-Memory-Management-Chatbot.git
