@@ -49,6 +49,13 @@
 		1. [Passing smart pointers to functions](#Passing-smart-pointers-to-functions)
 		2. [Returning smart pointers from functions](#Returning-smart-pointers-from-functions)
 6. [Project Memory Management Chatbot](#Project-Memory-Management-Chatbot)
+	1. [Project Introduction](#Project-Introduction)
+	2. [Project Rubric](#Project-Rubric)
+	3. [Program Schematic](#Program-Schematic)
+	4. [Program Knowledge Base](#Program-Knowledge-Base)
+	5. [Project Tasks Overview](#Project-Tasks-Overview)
+	6. [Code Walkthrough](#Code-Walkthrough)
+	7. [Task Details](#Task-Details)
 
 # Overview of Memory Types
 ## Memory Addresses and Hexadecimal Numbers
@@ -2919,3 +2926,123 @@ weak pointer is expired
 ```
 
 # Project Memory Management Chatbot
+
+## Project Introduction
+
+See [here](https://youtu.be/O37QD8JUPTE) for a working demo.
+
+**Purpose** : In this project you will analyze and modify an existing ChatBot program, which is able to discuss some memory management topics based on the content of a knowledge base. The program can be executed and works as intended. However, no advanced concepts as discussed in this course have been used. There are no smart pointers, no move semantics and not much thought has been given on ownership and on memory allocation.
+
+**Your task** : Use the course knowledge to optimize the ChatBot program from a memory management perspective. There is a total of five tasks to be completed.
+
+You can find the GitHub repo for the project [here](https://github.com/udacity/CppND-Memory-Management-Chatbot). The rubric for the project can be found [here](https://learn.udacity.com/rubric/2687). Or you can see it below if the link doesn't work.
+
+## Project Rubric
+
+|Success Criteria|Specifications|
+|---|---|
+|Is the code functional?|The code compiles and runs with `cmake` and `make`.|
+
+### Task 1: Exclusive Ownership 1
+
+|Success Criteria|Specifications|
+|---|---|
+|`_chatLogic` is an exclusive resource of `ChatbotPanelDialog`|In file `chatgui.h` / `chatgui.cpp`, `_chatLogic` is made an exclusive resource to class `ChatbotPanelDialog` using an appropriate smart pointer. Where required, changes are made to the code such that data structures and function parameters reflect the new structure.|
+
+### Task 2: The Rule of Five
+
+|Success Criteria|Specifications|
+|---|---|
+|Class design meets the Rule of Five guidelines.|In file `chatbot.h` / `chatbot.cpp`, changes are made to the class `ChatBot` such that it complies with the Rule of Five. Memory resources are properly allocated / deallocated on the heap and member data is copied where it makes sense. In each of the methods (e.g. the copy constructor), a string of the type "ChatBot Copy Constructor" is printed to the console so that it is possible to see which method is called in later examples.|
+
+### Task 3: Exclusive Ownership 2
+
+|Success Criteria|Specifications|
+|---|---|
+|The `GraphNode`s in the vector `_nodes` are exclusively owned by the class `ChatLogic`.|In file `chatlogic.h` / `chatlogic.cpp`, the vector `_nodes` are adapted in a way that the instances of `GraphNodes` to which the vector elements refer are exclusively owned by the class `ChatLogic`. An appropriate type of smart pointer is used to achieve this.|
+|`GraphNode` ownership is not transferred when passing instances.|When passing the `GraphNode` instances to functions, ownership is not transferred.|
+
+### Task 4: Moving Smart Pointers
+
+|Success Criteria|Specifications|
+|---|---|
+|`GraphNode`s exclusively own the outgoing `GraphEdges` and hold non-owning references to incoming `GraphEdges`.|In files `chatlogic.h` / `chatlogic.cpp` and `graphnodes.h` / `graphnodes.cpp` all instances of `GraphEdge` are changed in a way such that each instance of `GraphNode` exclusively owns the outgoing `GraphEdges` and holds non-owning references to incoming `GraphEdges`. Appropriate smart pointers are used to do this. Where required, changes are made to the code such that data structures and function parameters reflect the changes.|
+|Move semantics are used when transferring ownership from class `ChatLogic` into instances of `GraphNode`.|In files `chatlogic.h` / `chatlogic.cpp` and `graphnodes.h` / `graphnodes.cpp`, move semantics are used when transferring ownership from class `ChatLogic`, where all instances of `GraphEdge` are created, into instances of `GraphNode`.|
+
+### Task 5: Moving the ChatBot
+
+|Success Criteria|Specifications|
+|---|---|
+|Move semantics are used correctly with `ChatBot`.|In file `chatlogic.cpp`, a local `ChatBot` instance is created on the stack at the bottom of function `LoadAnswerGraphFromFile` and move semantics are used to pass the `ChatBot` instance into the root node.|
+|`ChatLogic` has no ownership relation to the `ChatBot` instance.|`ChatLogic` has no ownership relation to the `ChatBot` instance and thus is no longer responsible for memory allocation and deallocation.|
+|The `Chatbot` prints output to indicate Rule of Five components.|When the program is executed, messages are printed to the console indicating which Rule of Five component of `ChatBot` is being called.|
+
+## Program Schematic
+
+See [here](https://youtu.be/NIqbxtZ7L6Q) and [here](https://youtu.be/XGJIwDYU_ao) for a video program schematic. Screenshots below have layout.
+![](images/2023-07-25_07-38-25.png)
+![](images/2023-07-25_07-35-25.png)
+
+## Program Knowledge Base
+
+See [here](https://youtu.be/dN0_QDto4Cc) to see how the nodes are organized out for the app.
+![](images/2023-07-25_07-42-36.png)
+
+## Project Tasks Overview
+
+See [here](https://youtu.be/wY9Lyreewsk) for intro to tasks.
+
+## Code Walkthrough
+
+Each of the following screencasts is a detailed overview of the code for one or more files in the project repository. If you haven't seen the repo already, you can find the repo [here](https://github.com/udacity/CppND-Memory-Management-Chatbot). You may want to download the code to your local machine or open the repo in another browser window to follow along with the screencasts below.
+
+[chatgui.h](https://youtu.be/8OKtt-vUqfw)
+[chatgui.cpp](https://youtu.be/RbVb6gl_Ugo)
+[chatlogic.cpp](https://youtu.be/D_PAXGu4GEM)
+[graphnode.h](https://youtu.be/NJKyZVlsXZM)
+[graphnode.cpp](https://youtu.be/lvQYMMm-Dwg)
+[graphedge.h](https://youtu.be/lXdUrJsxzmc)
+[chatbot.h](https://youtu.be/fWpsTYDSiVU)
+[chatbot.cpp](https://youtu.be/DZt0XlXpc64)
+
+## Task Details
+
+### Debug Warm-Up Task
+[Debug Warm-Up Task](https://youtu.be/ayNGfipZmNg)
+
+### Task 1: Exclusive Ownership 1
+[Task 1: Exclusive Ownership 1](https://youtu.be/CggnHc9VJRc)
+
+In file `chatgui.h` / `chatgui.cpp`, make _chatLogic an exclusive resource to class `ChatbotPanelDialog` using an appropriate smart pointer. Where required, make changes to the code such that data structures and function parameters reflect the new structure.
+
+### Task 2: The Rule of Five
+
+[Task 2: The Rule of Five](https://youtu.be/C82m2EOl1zY)
+
+In file `chatbot.h` / `chatbot.cpp`, make changes to the class ChatBot such that it complies with the Rule of Five. Make sure to properly allocate / deallocate memory resources on the heap and also copy member data where it makes sense to you. In each of the methods (e.g. the copy constructor), print a string of the type „ChatBot Copy Constructor“ to the console so that you can see which method is called in later examples.
+
+### Task 3 : Exclusive Ownership 2
+
+[Task 3: Exclusive Ownership 2](https://youtu.be/c6OVZXuviCc)
+
+In file `chatlogic.h` / `chatlogic.cpp`, adapt the vector _nodes in a way that the instances of `GraphNodes` to which the vector elements refer are exclusively owned by the class `ChatLogic`. Use an appropriate type of smart pointer to achieve this. Where required, make changes to the code such that data structures and function parameters reflect the changes. When passing the `GraphNode` instances to functions, make sure to not transfer ownership and try to contain the changes to class `ChatLogic` where possible.
+
+### Task 4: Moving Smart Pointers
+
+[Task 4: Moving Smart Pointers](https://youtu.be/kbhdL7MgeIE)
+
+In files `chatlogic.h` / `chatlogic.cpp` and `graphnodes.h` / `graphnodes.cpp` change the ownership of all instances of `GraphEdge` in a way such that each instance of `GraphNode` exclusively owns the outgoing `GraphEdges` and holds non-owning references to incoming `GraphEdges`. Use appropriate smart pointers and where required, make changes to the code such that data structures and function parameters reflect the changes. When transferring ownership from class `ChatLogic`, where all instances of `GraphEdge` are created, into instances of `GraphNode`, make sure to use move semantics.
+
+### Task 5: Moving the ChatBot
+
+[Task 5: Moving the ChatBot](https://youtu.be/amDd3JEpvl8)
+
+In file `chatlogic.cpp`, create a local `ChatBot` instance on the stack at the bottom of function `LoadAnswerGraphFromFile`. Then, use move semantics to pass the `ChatBot` instance into the root node. Make sure that `ChatLogic` has no ownership relation to the `ChatBot` instance and thus is no longer responsible for memory allocation and deallocation. Note that the member `_chatBot` remains so it can be used as a communication handle between GUI and `ChatBot` instance. Make all required changes in files `chatlogic.h` / `chatlogic.cpp` and `graphnode.h` / `graphnode.cpp`. When the program is executed, messages on which part of the Rule of Five components of `ChatBot` is called should be printed to the console. When sending a query to the `ChatBot`, the output should look like the following:
+
+```
+ChatBot Constructor
+ChatBot Move Constructor
+ChatBot Move Assignment Operator
+ChatBot Destructor
+ChatBot Destructor 
+```
