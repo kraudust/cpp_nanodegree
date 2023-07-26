@@ -2997,12 +2997,19 @@ See [here](https://youtu.be/wY9Lyreewsk) for intro to tasks.
 Each of the following screencasts is a detailed overview of the code for one or more files in the project repository. If you haven't seen the repo already, you can find the repo [here](https://github.com/udacity/CppND-Memory-Management-Chatbot). You may want to download the code to your local machine or open the repo in another browser window to follow along with the screencasts below.
 
 [chatgui.h](https://youtu.be/8OKtt-vUqfw)
+
 [chatgui.cpp](https://youtu.be/RbVb6gl_Ugo)
+
 [chatlogic.cpp](https://youtu.be/D_PAXGu4GEM)
+
 [graphnode.h](https://youtu.be/NJKyZVlsXZM)
+
 [graphnode.cpp](https://youtu.be/lvQYMMm-Dwg)
+
 [graphedge.h](https://youtu.be/lXdUrJsxzmc)
+
 [chatbot.h](https://youtu.be/fWpsTYDSiVU)
+
 [chatbot.cpp](https://youtu.be/DZt0XlXpc64)
 
 ## Task Details
