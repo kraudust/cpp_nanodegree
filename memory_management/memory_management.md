@@ -2986,6 +2986,7 @@ See [here](https://youtu.be/NIqbxtZ7L6Q) and [here](https://youtu.be/XGJIwDYU_ao
 ## Program Knowledge Base
 
 See [here](https://youtu.be/dN0_QDto4Cc) to see how the nodes are organized out for the app.
+![](images/2023-07-25-20-24-57.png)
 ![](images/2023-07-25_07-42-36.png)
 
 ## Project Tasks Overview
