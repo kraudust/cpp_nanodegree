@@ -1,5 +1,6 @@
 .gitconfig-personal
 build
 lib
+.vscode
 *.out
 .obsidian
