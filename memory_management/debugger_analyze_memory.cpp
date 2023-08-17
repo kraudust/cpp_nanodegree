@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <iostream>
 // To compile with debug symbols: g++ -g debugger_analyze_memory.cpp
 // gdb a.out, then use the following commands:
 // list
@@ -16,5 +17,9 @@ int main()
     char str1[]= "UDACITY";
     printf("%s",str1);
 
+    int* newInt = new int(3);
+    std::cout << std::endl << newInt << std::endl;
+    std::cout << &newInt << std::endl;
+    std::cout << *newInt << std::endl;
     return 0;
 }
