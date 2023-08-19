@@ -8,6 +8,8 @@
 		4. [Using join as a barrier](#Using-join-as-a-barrier)
 		5. [Detach](#Detach)
 	3. [Starting a Thread with Function Objects](#Starting-a-Thread-with-Function-Objects)
+		1. [Lambdas](#Lambdas)
+		2. [Starting Threads with Lambdas](#Starting-Threads-with-Lambdas)
 	4. [Starting a Thread with Variadic Templates and Member Functions](#Starting-a-Thread-with-Variadic-Templates-and-Member-Functions)
 	5. [Running Multiple Threads](#Running-Multiple-Threads)
 2. [Passing Data Between Threads](#Passing-Data-Between-Threads)
@@ -497,6 +499,177 @@ Vehicle #1 has been created
 ```
 
 As can easily be seen, the integer ID has been successfully passed into the thread function.
+
+### Lambdas
+Another very useful way of starting a thread and passing information to it is by using a lambda expression ("Lambda" for short). With a Lambda you can easily create simple function objects.
+
+The name "Lambda" comes from Lambda Calculus , a mathematical formalism invented by Alonzo Church in the 1930s to investigate questions of logic and computability. Lambda calculus formed the basis of LISP, a functional programming language. Compared to Lambda Calculus and LISP, C ++ - Lambdas have the properties of being unnamed and capturing variables from the surrounding context, but lack the ability to execute and return functions.
+
+A Lambda is often used as an argument for functions that can take a callable object. This can be easier than creating a named function that is used only when passed as an argument. In such cases, Lambdas are generally preferred because they allow the function objects to be defined inline. If Lambdas were not available, we would have to define an extra function somewhere else in our source file - which would work but at the expense of the clarity of the source code.
+
+A Lambda is a function object (a "functor"), so it has a type and can be stored and passed around. Its result object is called a "closure", which can be called using the operator `()` as we will see shortly.
+
+A lambda formally consists of three parts: a capture list `[]` , a parameter list `()` and a main part `{}`, which contains the code to be executed when the Lambda is called. Note that in principal all parts could be empty.
+
+_The capture list `[]`_: By default, variables outside of the enclosing {} around the main part of the Lambda can not be accessed. By adding a variable to the capture list however, it becomes available within the Lambda either as a copy or as a reference. The captured variables become a part of the Lambda.
+
+By default, variables in the capture block can not be modified within the Lambda. Using the keyword "mutable" allows to modify the parameters captured by copy, and to call their non-const member functions within the body of the Lambda. The following code examples show several ways of making the external variable "id" accessible within a Lambda.
+
+```cpp
+#include <iostream>
+
+int main()
+{
+    // create lambdas
+    int id = 0; // Define an integer variable
+
+    //auto f0 = []() { std::cout << "ID = " << id << std::endl; }; // Error: 'id' cannot be accessed
+
+    id++;
+    auto f1 = [id]() { std::cout << "ID = " << id << std::endl; }; // OK, 'id' is captured by value
+
+    id++;
+    auto f2 = [&id]() { std::cout << "ID = " << id << std::endl; }; // OK, 'id' is captured by reference
+
+    //auto f3 = [id]() { std::cout << "ID = " << ++id << std::endl; }; // Error, 'id' may not be modified
+
+    auto f4 = [id]() mutable { std::cout << "ID = " << ++id << std::endl; }; // OK, 'id' may be modified
+
+    // execute lambdas
+    f1();
+    f2();
+    f4();
+
+    return 0;
+}
+```
+
+Output is:
+
+```
+ID = 1
+ID = 2
+ID = 3
+```
+
+Even though we have been using Lambdas in the above example in various ways, it is important to note that a Lambda does not exist at runtime. The runtime effect of a Lambda is the generation of an object, which is known as _closure_. The difference between a Lambda and the corresponding closure is similar to the distinction between a class and an instance of the class. A class exists only in the source code while the objects created from it exist at runtime.
+
+We can use (a copy of) the closure (i.e. f0, f1, …) to execute the code within the Lambda at a position in our program different to the line where the function object was created.
+
+_The parameter list `()`_ : The way parameters are passed to a Lambda is basically identical to calling a regular function. If the Lambda takes no arguments, these parentheses can be omitted (except when "mutable" is used).
+
+The following example illustrates how the function object is first created and then used to pass the parameter id later in the code.
+
+```cpp
+#include <iostream>
+
+int main()
+{
+    int id = 0; // Define an integer variable
+
+    // create lambda
+    auto f = [](const int id) { std::cout << "ID = " << id << std::endl; }; // ID is passed as a parameter
+
+    // execute function object and pass the parameter
+    f(id);
+
+    return 0;
+}
+```
+
+**Quiz**
+
+The code below shows how to capture variables by value and by reference, how to pass variables to a Lambda using the parameter list and how to use the closure to execute the Lambda.
+
+```cpp
+#include <iostream>
+
+int main()
+{
+    int id = 0; // Define an integer variable
+
+    // capture by reference (immutable)
+    auto f0 = [&id]() { std::cout << "a) ID in Lambda = " << id << std::endl; };
+
+    // capture by value (mutable)
+    auto f1 = [id]() mutable { std::cout << "b) ID in Lambda = " << ++id << std::endl; };
+    f1(); // call the closure and execute the code witin the Lambda
+    std::cout << "c) ID in Main = " << id << std::endl;
+
+    // capture by reference (mutable)
+    auto f2 = [&id]() mutable { std::cout << "d) ID in Lambda = " << ++id << std::endl; };
+    f2(); 
+    std::cout << "e) ID in Main = " << id << std::endl; 
+
+    // pass parameter 
+    auto f3 = [](const int id) { std::cout << "f) ID in Lambda = " << id << std::endl; };   
+    f3(++id);
+
+    // observe the effect of capturing by reference at an earlier point in time
+    f0(); 
+
+    return 0;
+}
+```
+
+Output is:
+
+```
+b) ID in Lambda = 1
+c) ID in Main = 0
+d) ID in Lambda = 1
+e) ID in Main = 1
+f) ID in Lambda = 2
+a) ID in Lambda = 2
+```
+
+Youtube video explaining is [here](https://youtu.be/K8GxT0bHosY).
+
+### Starting Threads with Lambdas
+A Lambda is, as we’ve seen, just an object and, like other objects it may be copied, passed as a parameter, stored in a container, etc. The Lambda object has its own scope and lifetime which may, in some circumstances, be different to those objects it has ‘captured’. Programers need to take special care when capturing local objects by reference because a Lambda’s lifetime may exceed the lifetime of its capture list: It must be ensured that the object to which the reference points is still in scope when the Lambda is called. This is especially important in multi-threading programs.
+
+So let us start a thread and pass it a Lambda object to execute:
+```cpp
+#include <iostream>
+#include <thread>
+
+int main()
+{
+    int id = 0; // Define an integer variable
+
+    // starting a first thread (by reference)
+    auto f0 = [&id]() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::cout << "a) ID in Thread (call-by-reference) = " << id << std::endl;
+    };
+    std::thread t1(f0);
+
+    // starting a second thread (by value)
+    std::thread t2([id]() mutable {
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::cout << "b) ID in Thread (call-by-value) = " << id << std::endl;
+    });
+
+    // increment and print id in main
+    ++id;
+    std::cout << "c) ID in Main (call-by-value) = " << id << std::endl;
+
+    // wait for threads before returning
+    t1.join();
+    t2.join();
+
+    return 0;
+}
+```
+
+The output of the program is:
+```
+c) ID in Main (call-by-value) = 1
+b) ID in Thread (call-by-value) = 0
+a) ID in Thread (call-by-reference) = 1
+```
+
+As you can see, the output in the main thread is generated first, at which point the variable ID has taken the value 1. Then, the call-by-value thread is executed with ID at a value of 0. Then, the call-by-reference thread is executed with ID at a value of 1. This illustrates the effect of passing a value by reference : when the data to which the reference refers changes before the thread is executed, those changes will be visible to the thread. We will see other examples of such behavior later in the course, as this is a primary source of concurrency bugs.
 
 ## Starting a Thread with Variadic Templates and Member Functions
 ## Running Multiple Threads
