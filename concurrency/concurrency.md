@@ -25,6 +25,7 @@
 	3. [Avoiding Data Races](#Avoiding-Data-Races)
 		1. [Passing data to a thread by value](#Passing-data-to-a-thread-by-value)
 		2. [Overwriting the copy constructor](#Overwriting-the-copy-constructor)
+		3. [Passing data using move semantics](#Passing-data-using-move-semantics)
 3. [Mutexes and Locks](#Mutexes-and-Locks)
 4. [Condition Variables and Message Queues](#Condition-Variables-and-Message-Queues)
 5. [Project Concurrent Traffic Simulation](#Project-Concurrent-Traffic-Simulation)
@@ -1764,8 +1765,228 @@ The problem with passing a proprietary class is that the standard copy construct
 Expanding on the code example from above, please implement the code required for a deep copy so that the program always prints "Vehicle 3" to the console, regardless of the delay within the thread function.
 
 ```cpp
+#include <iostream>
+#include <thread>
+#include <future>
 
+class Vehicle
+{
+public:
+    //default constructor
+    Vehicle() : _id(0), _name(new std::string("Default Name"))
+    {
+        std::cout << "Vehicle #" << _id << " Default constructor called" << std::endl;
+    }
+
+    //initializing constructor
+    Vehicle(int id, std::string name) : _id(id), _name(new std::string(name))
+    {
+        std::cout << "Vehicle #" << _id << " Initializing constructor called" << std::endl;
+    }
+
+    // copy constructor 
+    Vehicle(Vehicle const &src)
+    {
+        // QUIZ: Student code STARTS here
+        _id = src._id;
+        if (src._name != nullptr)
+        {
+            _name = new std::string;
+            *_name = *src._name;
+        }
+        // QUIZ: Student code ENDS here
+        std::cout << "Vehicle #" << _id << " copy constructor called" << std::endl;
+    }
+
+    // setter and getter
+    void setID(int id) { _id = id; }
+    int getID() { return _id; }
+    void setName(std::string name) { *_name = name; }
+    std::string getName() { return *_name; }
+
+private:
+    int _id;
+    std::string *_name;
+};
+
+int main()
+{
+    // create instances of class Vehicle
+    Vehicle v0;    // default constructor
+    Vehicle v1(1, "Vehicle 1"); // initializing constructor
+
+    // launch a thread that modifies the Vehicle name
+    std::future<void> ftr = std::async([](Vehicle v) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(500)); // simulate work
+        v.setName("Vehicle 2");
+    },v0);
+
+    v0.setName("Vehicle 3");
+
+    ftr.wait();
+    std::cout << v0.getName() << std::endl;
+
+    return 0;
+}
 ```
+
+### Passing data using move semantics
+Even though a customized copy constructor can help us to avoid data races, it is also time (and memory) consuming. In the following, we will use move semantics to implement a more effective way of safely passing data to a thread.
+
+A move constructor enables the resources owned by an rvalue object to be moved into an lvalue without physically copying it. Rvalue references support the implementation of move semantics, which enables the programmer to write code that transfers resources (such as dynamically allocated memory) from one object to another.
+
+To make use of move semantics, we need to provide a move constructor (and optionally a move assignment operator). Copy and assignment operations whose sources are rvalues automatically take advantage of move semantics. Unlike the default copy constructor however, the compiler does not provide a default move constructor.
+
+To define a move constructor for a C++ class, the following steps are required:
+
+1. Define an empty constructor method that takes an rvalue reference to the class type as its parameter
+
+![](images/C3-4-A5a.png)
+
+2. In the move constructor, assign the class data members from the source object to the object that is being constructed
+
+![](images/C3-4-A5b.png)
+
+3. Assign the data members of the source object to default values.
+
+![](images/C3-4-A5c.png)
+
+When launching the thread, the Vehicle object `v0` can be passed using `std::move()` - which calls the move constructor and invalidates the original object `v0` in the main thread.
+
+```cpp
+#include <iostream>
+#include <thread>
+#include <future>
+
+class Vehicle
+{
+public:
+    //default constructor
+    Vehicle() : _id(0), _name(new std::string("Default Name"))
+    {
+        std::cout << "Vehicle #" << _id << " Default constructor called" << std::endl;
+    }
+
+    //initializing constructor
+    Vehicle(int id, std::string name) : _id(id), _name(new std::string(name))
+    {
+        std::cout << "Vehicle #" << _id << " Initializing constructor called" << std::endl;
+    }
+
+    // copy constructor 
+    Vehicle(Vehicle const &src)
+    {
+        //...
+        std::cout << "Vehicle #" << _id << " copy constructor called" << std::endl;
+    };
+
+    // move constructor 
+    Vehicle(Vehicle && src)
+    {
+        _id = src.getID();
+        _name = new std::string(src.getName());
+
+        src.setID(0);
+        src.setName("Default Name");
+
+        std::cout << "Vehicle #" << _id << " move constructor called" << std::endl;
+    };
+
+    // setter and getter
+    void setID(int id) { _id = id; }
+    int getID() { return _id; }
+    void setName(std::string name) { *_name = name; }
+    std::string getName() { return *_name; }
+
+private:
+    int _id;
+    std::string *_name;
+};
+
+int main()
+{
+    // create instances of class Vehicle
+    Vehicle v0;    // default constructor
+    Vehicle v1(1, "Vehicle 1"); // initializing constructor
+
+    // launch a thread that modifies the Vehicle name
+    std::future<void> ftr = std::async([](Vehicle v) {
+        v.setName("Vehicle 2");
+    },std::move(v0));
+
+    ftr.wait();
+    std::cout << v0.getName() << std::endl;
+
+    return 0;
+}
+```
+
+As with the above-mentioned copy constructor, passing by value is usually safe - provided that a deep copy is made of all the data structures within the object that is to be passed. With move semantics , we can additionally use the notion of uniqueness to prevent data races by default. In the following example, a `unique_pointer` instead of a raw pointer is used for the string member in the Vehicle class.
+
+```cpp
+#include <iostream>
+#include <thread>
+#include <future>
+#include <memory>
+
+class Vehicle
+{
+public:
+    //default constructor
+    Vehicle() : _id(0), _name(new std::string("Default Name"))
+    {
+        std::cout << "Vehicle #" << _id << " Default constructor called" << std::endl;
+    }
+
+    //initializing constructor
+    Vehicle(int id, std::string name) : _id(id), _name(new std::string(name))
+    {
+        std::cout << "Vehicle #" << _id << " Initializing constructor called" << std::endl;
+    }
+
+    // move constructor with unique pointer
+    Vehicle(Vehicle && src) : _name(std::move(src._name))
+    {
+        // move id to this and reset id in source
+        _id = src.getID();
+        src.setID(0);
+
+        std::cout << "Vehicle #" << _id << " move constructor called" << std::endl;
+    };
+
+    // setter and getter
+    void setID(int id) { _id = id; }
+    int getID() { return _id; }
+    void setName(std::string name) { *_name = name; }
+    std::string getName() { return *_name; }
+
+private:
+    int _id;
+    std::unique_ptr<std::string> _name;
+};
+
+
+int main()
+{
+    // create instances of class Vehicle
+    Vehicle v0;    // default constructor
+    Vehicle v1(1, "Vehicle 1"); // initializing constructor
+
+    // launch a thread that modifies the Vehicle name
+    std::future<void> ftr = std::async([](Vehicle v) {
+        v.setName("Vehicle 2");
+    },std::move(v0));
+
+    ftr.wait();
+    std::cout << v0.getName() << std::endl; // this will now cause an exception
+
+    return 0;
+}
+```
+
+As can be seen, the `std::string` has now been changed to a unique pointer, which means that only a single reference to the memory location it points to is allowed. Accordingly, the move constructor transfers the unique pointer to the worker by using `std::move` and thus invalidates the pointer in the `main` thread. When calling `v0.getName()`, an exception is thrown, making it clear to the programmer that accessing the data at this point is not permissible - which is the whole point of using a unique pointer here as a data race will now be effectively prevented.
+
+The point of this example has been to illustrate that move semantics on its own is not enough to avoid data races. The key to thread safety is to use move semantics in conjunction with uniqueness. It is the responsibility of the programmer to ensure that pointers to objects that are moved between threads are unique.
 
 # Mutexes and Locks
 
