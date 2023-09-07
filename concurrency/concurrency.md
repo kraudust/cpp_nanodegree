@@ -26,6 +26,7 @@
 		1. [Passing data to a thread by value](#Passing-data-to-a-thread-by-value)
 		2. [Overwriting the copy constructor](#Overwriting-the-copy-constructor)
 		3. [Passing data using move semantics](#Passing-data-using-move-semantics)
+	4. [Lesson 2 Exercise](#Lesson-2-Exercise)
 3. [Mutexes and Locks](#Mutexes-and-Locks)
 4. [Condition Variables and Message Queues](#Condition-Variables-and-Message-Queues)
 5. [Project Concurrent Traffic Simulation](#Project-Concurrent-Traffic-Simulation)
@@ -1987,6 +1988,31 @@ int main()
 As can be seen, the `std::string` has now been changed to a unique pointer, which means that only a single reference to the memory location it points to is allowed. Accordingly, the move constructor transfers the unique pointer to the worker by using `std::move` and thus invalidates the pointer in the `main` thread. When calling `v0.getName()`, an exception is thrown, making it clear to the programmer that accessing the data at this point is not permissible - which is the whole point of using a unique pointer here as a data race will now be effectively prevented.
 
 The point of this example has been to illustrate that move semantics on its own is not enough to avoid data races. The key to thread safety is to use move semantics in conjunction with uniqueness. It is the responsibility of the programmer to ensure that pointers to objects that are moved between threads are unique.
+
+## Lesson 2 Exercise
+
+See videos [here](https://youtu.be/hYQus_Yieu4) and [here](https://youtu.be/1rcgMOF996k).
+
+See lesson code [here](Lesson2Exercise).
+
+- **Task L2.1** : In method Vehicle::drive(), start up a task using std::async which takes a reference to the method Intersection::addVehicleToQueue, the object _currDestination and a shared pointer to this using the get_shared_this() function. Then, wait for the data to be available before proceeding to slow down.
+    
+- **Task L2.2** : In method Intersection::addVehicleToQueue(), add the new vehicle to the waiting line by creating a promise, a corresponding future and then adding both to _waitingVehicles. Then wait until the vehicle has been granted entry.
+    
+- **Task L2.3** : In method WaitingVehicles::permitEntryToFirstInQueue(), get the entries from the front of _promises and _vehicles. Then, fulfill promise and send signal back that permission to enter has been granted. Finally, remove the front elements from both queues.
+    
+**Note:** To compile and run this code, you can use the same steps as the previous lesson exercise.
+
+### Build Instructions
+To compile and run the code, create a `build` directory and use `cmake` and `make` as follows:
+
+```
+root@a9ad274128c4:/home/workspace/L2_Project# mkdir build
+root@a9ad274128c4:/home/workspace/L2_Project# cd build
+root@a9ad274128c4:/home/workspace/L2_Project/build# cmake ..
+root@a9ad274128c4:/home/workspace/L2_Project/build# make
+root@a9ad274128c4:/home/workspace/L2_Project/build# ./traffic_simulation
+```
 
 # Mutexes and Locks
 
