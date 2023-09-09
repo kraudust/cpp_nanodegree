@@ -34,7 +34,9 @@ void Vehicle::drive()
     // L3.3 : Ensure that the text output locks the console as a shared resource. Use the mutex _mtxCout you have added to the base class TrafficObject in the previous task. 
 
     // print id of the current thread
+    std::unique_lock<std::mutex> lck(_mtxCout);
     std::cout << "Vehicle #" << _id << "::drive: thread id = " << std::this_thread::get_id() << std::endl;
+    lck.unlock();
 
     // initalize variables
     bool hasEnteredIntersection = false;
