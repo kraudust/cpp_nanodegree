@@ -35,6 +35,7 @@
 		1. [Lock Guard](#Lock-Guard)
 		2. [Unique Lock](#Unique-Lock)
 		3. [Avoiding deadlocks with std lock](#Avoiding-deadlocks-with-std-lock)
+	5. [Lesson 3 Exercise](#Lesson-3-Exercise)
 4. [Condition Variables and Message Queues](#Condition-Variables-and-Message-Queues)
 5. [Project Concurrent Traffic Simulation](#Project-Concurrent-Traffic-Simulation)
 
@@ -2803,6 +2804,8 @@ int main()
 }
 ```
 As a rule of thumb, programmers should try to avoid using several mutexes at once. Practice shows that this can be achieved in the majority of cases. For the remaining cases though, using `std::lock` is a safe way to avoid a deadlock situation.
+
+## Lesson 3 Exercise
 
 # Condition Variables and Message Queues
 
