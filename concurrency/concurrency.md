@@ -3460,6 +3460,8 @@ A message queue is an effective and very useful mechanism to enable a safe and r
 
 # Project Concurrent Traffic Simulation
 
+Project code is [here](CppND-Program-a-Concurrent-Traffic-Simulation).
+
 Task description video is [here](https://youtu.be/ie1CM5ms2O8).
 
 Program schematic is below:
