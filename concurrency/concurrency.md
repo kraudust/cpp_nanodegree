@@ -3459,3 +3459,68 @@ int main()
 A message queue is an effective and very useful mechanism to enable a safe and reusable communication channel between threads. In the final project, we will use shorty use this construct to integrate another component into our simulation - traffic lights at intersections.
 
 # Project Concurrent Traffic Simulation
+
+Task description video is [here](https://youtu.be/ie1CM5ms2O8).
+
+Program schematic is below:
+
+![](images/screenshot-2021-10-25-at-4.45.59-pm.png)
+
+## Task List
+
+- **Task FP.1** : Define a class `TrafficLight` which is a child class of `TrafficObject`. The class shall have the public methods `void waitForGreen()` and `void simulate()` as well as `TrafficLightPhase getCurrentPhase()`, where `TrafficLightPhase` is an enum that can be either `red` or `green`. Also, add the private method `void cycleThroughPhases()`. Furthermore, there shall be the private member `_currentPhase` which can take `red` or `green` as its value.
+- **Task FP.2** : Implement the function with an infinite loop that measures the time between two loop cycles and toggles the current phase of the traffic light between red and green and sends an update method to the message queue using move semantics. The cycle duration should be a random value between 4 and 6 seconds. Also, the while-loop should use `std::this_thread::sleep_for` to wait 1ms between two cycles. Finally, the private method `cycleThroughPhases` should be started in a thread when the public method `simulate` is called. To do this, use the thread queue in the base class. Rubric Tip: Don't forget to use `std::this_thread::sleep_for` to wait 1ms between two cycles.
+- **Task FP.3** : Define a class `MessageQueue` which has the public methods send and receive. Send should take an rvalue reference of type TrafficLightPhase whereas receive should return this type. Also, the class should define an `std::dequeue` called `_queue`, which stores objects of type `TrafficLightPhase`. Finally, there should be an `std::condition_variable` as well as an `std::mutex` as private members.
+- **Task FP.4** : Implement the method `Send`, which should use the mechanisms `std::lock_guard<std::mutex>` as well as `_condition.notify_one()` to add a new message to the queue and afterwards send a notification. Also, in class `TrafficLight`, create a private member of type `MessageQueue` for messages of type `TrafficLightPhase` and use it within the infinite loop to push each new `TrafficLightPhase` into it by calling send in conjunction with move semantics.
+- **Task FP.5** : The method receive should use `std::unique_lock<std::mutex>` and `_condition.wait()` to wait for and receive new messages and pull them from the queue using move semantics. The received object should then be returned by the receive function. Then, add the implementation of the method `waitForGreen`, in which an infinite while-loop runs and repeatedly calls the `receive` function on the message queue. Once it receives `TrafficLightPhase::green`, the method returns.
+- **Task FP.6**: In class Intersection, add a private member `_trafficLight` of type `TrafficLight`. In method `Intersection::simulate()`, start the simulation of `_trafficLight`. Then, in method `Intersection::addVehicleToQueue`, use the methods `TrafficLight::getCurrentPhase` and `TrafficLight::waitForGreen` to block the execution until the traffic light turns green.
+
+You can submit your project using the "SUBMIT PROJECT" button in the terminal.
+
+This project can only be submitted through the workspace. This is done to ensure that you are able to test your code in an environment similar to what reviewers will use.
+
+However, if you want to work on your local machine, you can download the starter code from [this](https://github.com/udacity/CppND-Program-a-Concurrent-Traffic-Simulation) Github repository and upload your finished project back into the classroom workspace for submission.
+
+Code overview video is [here](https://youtu.be/XVQt4iKEQwo).
+
+## Project Rubric
+
+## FP.1 Create a TrafficLight class
+
+|Success Criteria|Specifications|
+|---|---|
+|The `TrafficLight` class is defined|A `TrafficLight` class is is defined which is a child class of `TrafficObject`.|
+|The `TrafficLight` class methods are completed|The class shall have the public methods `void waitForGreen()` and `void simulate()` as well as `TrafficLightPhase getCurrentPhase()`, where `TrafficLightPhase` is an enum that can be either `red` or `green`.<br><br>Also, there should be a private method `void cycleThroughPhases()` and a private member `_currentPhase` which can take `red` or `green` as its value.|
+
+## FP.2: Implement a cycleThroughPhases method
+
+|Success Criteria|Specifications|
+|---|---|
+|The `cycleThroughPhases()` method is implemented.|Implement the function with an infinite loop that measures the time between two loop cycles and toggles the current phase of the traffic light between red and green.<br><br>The cycle duration should be a random value between 4 and 6 seconds, and the while-loop should use std:: this_thread:: sleep_for to wait 1ms between two cycles.<br><br>> Tip:<br><br>- We would recommend referring to the implementation of sleep_for() used in the while loop with a 1 ms condition for each cycle within the drive() function in the vehicle.cpp file.<br>- Don't forget to implement both parts of FP.2|
+|The `cycleThroughPhases()` method is started correctly.|The private `cycleThroughPhases()` method should be started in a thread when the public method `simulate` is called. To do this, a thread queue should be used in the base class.|
+
+## FP.3 Define class MessageQueue
+
+|Success Criteria|Specifications|
+|---|---|
+|A `MessageQueue` class is defined|A `MessageQueue` class is defined in the header of class `TrafficLight` which has the public methods `send` and `receive`.|
+|The `MessageQueue` class methods and members are declared correctly|`send` should take an `rvalue` reference of type `TrafficLightPhase` whereas `receive` should return this type.<br><br>Also, the `MessageQueue` class should define a `std::dequeue` called `_queue`, which stores objects of type `TrafficLightPhase`.<br><br>Also, there should be a `std::condition_variable` as well as an `std::mutex` as private members.|
+
+## FP.4 Implement the method `send`
+
+|Success Criteria|Specifications|
+|---|---|
+|The method `send` is correctly implemented|The method `send` should use the mechanisms `std::lock_guard<std::mutex>` as well as `_condition.notify_one()` to add a new message to the queue and afterwards send a notification. <br><br>In the class `TrafficLight`, a private member of type `MessageQueue` should be created and used within the infinite loop to push each new `TrafficLightPhase` into it by calling `send` in conjunction with move semantics.|
+
+## FP.5 Implement the methods `receive` and `waitForGreen`
+
+|Success Criteria|Specifications|
+|---|---|
+|The method `receive` is correctly implemented|The method receive should use `std::unique_lock<std::mutex>` and `_condition.wait()` to wait for and receive new messages and pull them from the queue using move semantics. The received object should then be returned by the `receive` function.|
+|The method `waitForGreen` is correctly implemented|The method waitForGreen is completed, in which an infinite while loop runs and repeatedly calls the receive function on the message queue. Once it receives TrafficLightPhase::green, the method returns.<br><br>> Note: Don't forget to implement both parts of FP.5|
+
+## FP.6 Implement message exchange
+
+|Success Criteria|Specifications|
+|---|---|
+|The message exchange is correctly implemented|In class Intersection, a private member _trafficLight of type TrafficLight should exist.<br><br>The method Intersection::simulate() should start the simulation of _trafficLight.<br><br>The method Intersection::addVehicleToQueue, should use the methods TrafficLight::getCurrentPhase and TrafficLight::waitForGreen to block the execution until the traffic light turns green.<br><br>> Note:<br><br>- The position where the intersection starts simulating shall also be the position where the traffic light is fired up.<br>- Don't forget to implement both parts of FP.6|
