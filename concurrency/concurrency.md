@@ -2,7 +2,7 @@
 1. [Introduction and Running Threads](#Introduction-and-Running-Threads)
 	1. [Processes and Threads](#Processes-and-Threads)
 	2. [Running a Single Thread](#Running-a-Single-Thread)
-		1. [Concurrency Support in C++11](Concurrency-Support-in-C++11)
+		1. [Concurrency Support in C++11](#concurrency-support-in-c11)
 		2. [Starting a second thread](#Starting-a-second-thread)
 		3. [Randomness of events](#Randomness-of-events)
 		4. [Using join as a barrier](#Using-join-as-a-barrier)
