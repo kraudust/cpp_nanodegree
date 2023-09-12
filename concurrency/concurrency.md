@@ -145,7 +145,29 @@ To prevent this from happening and have the main program wait for the thread to 
 The code below shows how to use `join()` to ensure that `main()` waits for the thread `t` to finish its operations before returning. It uses the function `sleep_for()`, which pauses the execution of the respective threads for a specified amount of time. The idea is to simulate some work to be done in the respective threads of execution.
 
 ```cpp
+#include <iostream>
+#include <thread>
 
+void threadFunction()
+{
+    std::this_thread::sleep_for(std::chrono::milliseconds(100)); // simulate work
+    std::cout << "Finished work in thread\n"; 
+}
+
+int main()
+{
+    // create thread
+    std::thread t(threadFunction);
+
+    // do something in main()
+    std::this_thread::sleep_for(std::chrono::milliseconds(50)); // simulate work
+    std::cout << "Finished work in main\n";
+
+    // wait for thread to finish
+    t.join();
+
+    return 0;
+}
 ```
 
 To compile this code with `g++`, you will need to use the `-pthread` flag. `pthread` adds support for multithreading with the pthreads library, and the option sets flags for both the preprocessor and linker:
