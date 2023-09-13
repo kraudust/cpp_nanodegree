@@ -16,3 +16,6 @@
 [submodule "concurrency/CppND-Program-a-Concurrent-Traffic-Simulation"]
 	path = concurrency/CppND-Program-a-Concurrent-Traffic-Simulation
 	url = git@github.com:kraudust/CppND-Program-a-Concurrent-Traffic-Simulation.git
+[submodule "capstone/CppND-Capstone-Snake-Game"]
+	path = capstone/CppND-Capstone-Snake-Game
+	url = git@github.com:kraudust/CppND-Capstone-Snake-Game.git
